@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Más adelante reemplazarás esto con las credenciales de tu proyecto real
-const supabaseUrl = 'https://tu-proyecto-temporal.supabase.co';
-const supabaseKey = 'tu-clave-anonima-temporal';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
