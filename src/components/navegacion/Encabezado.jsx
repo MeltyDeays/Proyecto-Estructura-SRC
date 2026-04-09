@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Container, Nav, Navbar, Offcanvas } from "react-bootstrap";
+import { Container, Nav, Navbar, Offcanvas, Button } from "react-bootstrap";
 import logo from "../../assets/react.svg";
 import { supabase } from "../../database/supabaseconfig";
 
@@ -36,173 +36,121 @@ const Encabezado = () => {
   // Contenido del menú
   let contenidoMenu;
 
+  const estaLogueado = !!localStorage.getItem("usuario-supabase");
+
   if (esLogin) {
     contenidoMenu = (
       <Nav className="ms-auto pe-2">
         <Nav.Link 
           onClick={() => manejarNavegacion("/login")} 
-          className={mostrarMenu ? "color-texto-marca" : "text-white"}
+          className={`nav-link-custom ${location.pathname === '/login' ? 'nav-link-active' : ''}`}
         >
-          <i className="bi-person-fill-lock me-2"></i>
-          Iniciar sesión
+          <i className="bi-person-fill-lock me-2"></i> Iniciar sesión
+        </Nav.Link>
+      </Nav>
+    );
+  } else if (!estaLogueado) {
+    // Menú para visitantes (Solo Catálogo e Inicio si es necesario)
+    contenidoMenu = (
+      <Nav className="ms-auto align-items-lg-center gap-1">
+        <Nav.Link 
+          onClick={() => manejarNavegacion("/catalogo")} 
+          className={`nav-link-custom ${location.pathname === '/catalogo' ? 'nav-link-active' : ''}`}
+        >
+          <i className="bi-layout-text-window-reverse me-2"></i> Catálogo Público
+        </Nav.Link>
+        <Nav.Link 
+          onClick={() => manejarNavegacion("/login")} 
+          className={`nav-link-custom ${location.pathname === '/login' ? 'nav-link-active' : ''}`}
+        >
+          <i className="bi-person-circle me-2"></i> Acceso Admin
         </Nav.Link>
       </Nav>
     );
   } else {
-    if (esCatalogo) {
-      contenidoMenu = (
-        <Nav className="ms-auto pe-2">
-         
-
-           <Nav.Link 
-              onClick={() => manejarNavegacion("/")} 
-              className={mostrarMenu ? "color-texto-marca" : "text-white"}
-            >
-              {mostrarMenu ? <i className="bi-house-fill me-2"></i> : null}
-              <strong>Inicio</strong>
-            </Nav.Link>
-            
-            <Nav.Link 
-              onClick={() => manejarNavegacion("/categorias")} 
-              className={mostrarMenu ? "color-texto-marca" : "text-white"}
-            >
-              {mostrarMenu ? <i className="bi-bookmark-fill me-2"></i> : null}
-              <strong>Categorías</strong>
-            </Nav.Link>
-            
-            <Nav.Link 
-              onClick={() => manejarNavegacion("/productos")} 
-              className={mostrarMenu ? "color-texto-marca" : "text-white"}
-            >
-              {mostrarMenu ? <i className="bi-bag-heart-fill me-2"></i> : null}
-              <strong>Productos</strong>
-            </Nav.Link>
-            
-             <Nav.Link 
-            onClick={() => manejarNavegacion("/catalogo")} 
-            className={mostrarMenu ? "color-texto-marca" : "text-white"}
-          >
-            <strong>Catálogo</strong>
-          </Nav.Link>
-
-              <Nav.Link 
-                onClick={cerrarSesion} 
-                className={mostrarMenu ? "color-texto-marca" : "text-white"}
-              >
-                <i className="bi-box-arrow-right me-2"></i>
-              </Nav.Link>
-        </Nav>
-      );
-    } else {
-      contenidoMenu = (
-        <>
-          <Nav className="ms-auto pe-2">
-            <Nav.Link 
-              onClick={() => manejarNavegacion("/")} 
-              className={mostrarMenu ? "color-texto-marca" : "text-white"}
-            >
-              {mostrarMenu ? <i className="bi-house-fill me-2"></i> : null}
-              <strong>Inicio</strong>
-            </Nav.Link>
-            
-            <Nav.Link 
-              onClick={() => manejarNavegacion("/categorias")} 
-              className={mostrarMenu ? "color-texto-marca" : "text-white"}
-            >
-              {mostrarMenu ? <i className="bi-bookmark-fill me-2"></i> : null}
-              <strong>Categorías</strong>
-            </Nav.Link>
-            
-            <Nav.Link 
-              onClick={() => manejarNavegacion("/productos")} 
-              className={mostrarMenu ? "color-texto-marca" : "text-white"}
-            >
-              {mostrarMenu ? <i className="bi-bag-heart-fill me-2"></i> : null}
-              <strong>Productos</strong>
-            </Nav.Link>
-            
-            {/* Opción para ir al catálogo público desde admin */}
-            <Nav.Link 
-              onClick={() => manejarNavegacion("/catalogo")} 
-              className={mostrarMenu ? "color-texto-marca" : "text-white"}
-            >
-              <strong>Catálogo</strong>
-            </Nav.Link>
-            
-            <hr />
-            
-            {/* Ícono cerrar sesión en barra superior */}
-            {mostrarMenu ? null : (
-              <Nav.Link 
-                onClick={cerrarSesion} 
-                className={mostrarMenu ? "color-texto-marca" : "text-white"}
-              >
-                <i className="bi-box-arrow-right me-2"></i>
-              </Nav.Link>
-            )}
-            
-            <hr />
-          </Nav>
-          
-          {/* Información de usuario y botón cerrar sesión */}
-          {mostrarMenu && (
-            <div className="mt-3 p-3 rounded bg-light text-dark">
-              <p className="mb-2">
-                <i className="bi-envelope-fill me-2"></i>
-                {localStorage.getItem("usuario-supabase")?.toLowerCase() || "Usuario"}
-              </p>
-              
-              <button 
-                className="btn btn-outline-danger mt-3 w-100" 
-                onClick={cerrarSesion}
-              >
-                <i className="bi-box-arrow-right me-2"></i>
-                Cerrar sesión
-              </button>
-            </div>
-          )}
-        </>
-      );
-    }
+    // Menú para administradores autenticados
+    contenidoMenu = (
+      <Nav className="ms-auto align-items-lg-center gap-1">
+        <Nav.Link 
+          onClick={() => manejarNavegacion("/")} 
+          className={`nav-link-custom ${location.pathname === '/' ? 'nav-link-active' : ''}`}
+        >
+          <i className="bi-house-fill me-2"></i> Inicio
+        </Nav.Link>
+        <Nav.Link 
+          onClick={() => manejarNavegacion("/categorias")} 
+          className={`nav-link-custom ${location.pathname === '/categorias' ? 'nav-link-active' : ''}`}
+        >
+          <i className="bi-grid-fill me-2"></i> Categorías
+        </Nav.Link>
+        <Nav.Link 
+          onClick={() => manejarNavegacion("/productos")} 
+          className={`nav-link-custom ${location.pathname === '/productos' ? 'nav-link-active' : ''}`}
+        >
+          <i className="bi-box-seam-fill me-2"></i> Productos
+        </Nav.Link>
+        <Nav.Link 
+          onClick={() => manejarNavegacion("/catalogo")} 
+          className={`nav-link-custom ${location.pathname === '/catalogo' ? 'nav-link-active' : ''}`}
+        >
+          <i className="bi-layout-text-window-reverse me-2"></i> Catálogo
+        </Nav.Link>
+        <Button 
+          variant="outline-light" 
+          className="btn-rounded border-0 ms-lg-2 opacity-75 hover-lift"
+          onClick={cerrarSesion}
+          title="Cerrar Sesión"
+        >
+          <i className="bi-box-arrow-right h5 mb-0"></i>
+        </Button>
+      </Nav>
+    );
   }
 
   return (
-    <Navbar expand="md" fixed="top" className="color-navbar shadow-lg" variant="dark">
+    <Navbar 
+      expand="lg" 
+      variant="dark" 
+      className="color-navbar shadow-sm sticky-top py-3"
+      style={{ backdropFilter: 'blur(10px)', backgroundColor: 'rgba(16, 104, 219, 0.95) !important' }}
+    >
       <Container>
         <Navbar.Brand 
-          onClick={() => manejarNavegacion(esCatalogo ? "/catalogo" : "/")} 
-          className="text-white fw-bold d-flex align-items-center" 
-          style={{ cursor: "pointer" }}
+          onClick={() => manejarNavegacion("/")} 
+          className="d-flex align-items-center cursor-pointer"
+          style={{ cursor: 'pointer' }}
         >
-          <img 
-            alt="" 
-            src={logo} 
-            width="45" 
-            height="45" 
-            className="d-inline-block me-2" 
-          />
-          <strong><h4 className="mb-0">Discosa</h4></strong>
+          <div className="bg-white p-2 rounded-3 me-2 shadow-sm d-flex align-items-center justify-content-center">
+            <img 
+              src={logo} 
+              alt="Logo" 
+              width="24" 
+              height="24" 
+              className="d-inline-block align-top"
+            />
+          </div>
+          <span className="fw-bold tracking-wider text-white h4 mb-0">Discosa</span>
         </Navbar.Brand>
 
-        {/* Botón del menú */}
-        {!esLogin && (
-          <Navbar.Toggle 
-            aria-controls="menu-offcanvas" 
-            onClick={manejarToggle} 
-          />
-        )}
+        <Navbar.Toggle 
+          aria-controls="offcanvasNavbar" 
+          onClick={manejarToggle}
+          className="border-0 shadow-none"
+        />
 
-        {/* Menú lateral */}
-        <Navbar.Offcanvas 
-          id="menu-offcanvas" 
-          placement="end" 
-          show={mostrarMenu} 
+        <Navbar.Offcanvas
+          show={mostrarMenu}
           onHide={() => setMostrarMenu(false)}
+          id="offcanvasNavbar"
+          aria-labelledby="offcanvasNavbarLabel"
+          placement="end"
+          className="bg-primary text-white"
         >
-          <Offcanvas.Header closeButton>
-            <Offcanvas.Title>Menú Discosa</Offcanvas.Title>
+          <Offcanvas.Header closeButton closeVariant="white" className="border-bottom border-white border-opacity-10">
+            <Offcanvas.Title id="offcanvasNavbarLabel" className="fw-bold">
+              Menú Principal
+            </Offcanvas.Title>
           </Offcanvas.Header>
-          
           <Offcanvas.Body>
             {contenidoMenu}
           </Offcanvas.Body>

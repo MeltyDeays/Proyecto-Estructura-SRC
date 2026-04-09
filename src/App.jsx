@@ -16,7 +16,7 @@ const App = () => {
   return (
     <Router>
       <Encabezado />
-      <div className="margin-superior-main">
+      <div className="animate-fade-in">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<RutaProtegida><Inicio /></RutaProtegida>} />

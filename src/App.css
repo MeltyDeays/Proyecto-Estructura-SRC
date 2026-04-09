@@ -1,17 +1,295 @@
 /* src/App.css */
 
 /* Empuja el contenido principal debajo del Navbar fijo para que no lo tape */
-.margin-superior-main {
-  margin-top: 85px; 
-  padding: 0 15px;
+.margen-superior-main {
+  margin-top: 0px; /* Reducido para evitar doble espacio con el Hero */
+  padding: 20px;
 }
 
-/* Color personalizado oscuro para tu barra de navegación */
 .color-navbar {
-  background-color: #1a1a1a !important; 
+  background-color: #1068db !important;
+  background-image: linear-gradient(90deg, #121b96 0%, #2889b6 50%, #2697cc 100%);
+  z-index: 1030; /* Asegura que el navbar esté por encima de casi todo */
 }
 
-/* Color de acento para el texto o íconos cuando se seleccionan o se hace hover */
+/* Fix para Toast oculto por Navbar */
+.toast-container {
+  margin-top: 80px !important; /* Baja la notificación debajo del Navbar */
+  z-index: 1060 !important; /* Por encima del Navbar */
+}
+
+/* Reducción de espacios excesivos */
+.mb-5 {
+  margin-bottom: 2rem !important; /* Reducido de 3rem */
+}
+
+.py-5 {
+  padding-top: 2rem !important;
+  padding-bottom: 2rem !important;
+}
+
+.rounded-bottom-5 {
+  border-bottom-left-radius: 2rem !important;
+  border-bottom-right-radius: 2rem !important;
+}
+
+/* --- ESTILOS PARA MODALES MODERNOS --- */
+.modal-content-custom {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  overflow: hidden;
+}
+
+.modal-header-custom {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+  padding: 1.5rem 2rem !important;
+  background: transparent !important;
+}
+
+.modal-header-custom .modal-title {
+  font-weight: 700;
+  color: #1e3d87;
+  letter-spacing: -0.02em;
+}
+
+.modal-body-custom {
+  padding: 2rem !important;
+}
+
+.modal-footer-custom {
+  border-top: 1px solid rgba(0, 0, 0, 0.05) !important;
+  padding: 1.25rem 2rem !important;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* Estilo para los inputs dentro de modales */
+.modal-body-custom .form-label {
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.modal-body-custom .form-control,
+.modal-body-custom .form-select {
+  border-radius: 12px !important;
+  padding: 0.75rem 1rem !important;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.modal-body-custom .form-control:focus {
+  border-color: #1068db;
+  box-shadow: 0 0 0 4px rgba(16, 104, 219, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Botones dentro de modales */
+.modal-footer-custom .btn {
+  border-radius: 12px !important;
+  padding: 0.6rem 1.5rem !important;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-footer-custom .btn-primary {
+  background: linear-gradient(135deg, #1068db 0%, #0a4da3 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(16, 104, 219, 0.25);
+}
+
+.modal-footer-custom .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 104, 219, 0.35);
+}
+
+.modal-footer-custom .btn-secondary {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  border: none !important;
+}
+
+.modal-footer-custom .btn-secondary:hover {
+  background: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+/* Variantes para modales de eliminación */
+.modal-header-danger {
+  background: rgba(239, 68, 68, 0.05) !important;
+}
+
+.modal-header-danger .modal-title {
+  color: #dc2626 !important;
+}
+
+/* --- ESTILOS DE UI/UX (Restaurados y Optimizados) --- */
+
 .color-texto-marca {
-  color: #0dcaf0 !important; 
+  color: #1e3d87 !important;
+  font-size: 18px;
+}
+
+.hover-shadow {
+  transition: all 0.3s ease;
+}
+
+.hover-shadow:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 1rem 3rem rgba(0,0,0,.175) !important;
+}
+
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+.rounded-4 {
+  border-radius: 1rem !important;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+
+/* Animaciones nativas */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+
+/* Tarjetas con Glassmorphism suave */
+.glass-card {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Efectos de Hover mejorados */
+.hover-lift {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08) !important;
+}
+
+.btn-rounded {
+  border-radius: 50px;
+  padding: 10px 25px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.btn-rounded:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 20px rgba(16, 104, 219, 0.2);
+}
+
+.bg-primary-soft {
+  background-color: rgba(16, 104, 219, 0.1) !important;
+}
+
+.badge {
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.tracking-wider {
+  letter-spacing: 0.1em;
+}
+
+.object-fit-cover {
+  object-fit: cover;
+}
+
+/* Scrollbar Personalizado */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* Mejoras en el Navbar */
+.nav-link-custom {
+  color: rgba(255, 255, 255, 0.7) !important;
+  transition: all 0.2s ease-in-out;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  padding: 0.6rem 1.2rem !important;
+  border-radius: 12px !important;
+  margin: 0 2px;
+}
+
+.nav-link-custom:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  transform: translateY(-1px);
+}
+
+.nav-link-active {
+  color: #1068db !important; /* Azul primario para contraste máximo */
+  background: #ffffff !important; /* Fondo blanco sólido */
+  font-weight: 700 !important;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15) !important;
+  transform: scale(1.05);
+}
+
+.nav-link-active i {
+  color: #1068db !important;
+}
+
+/* Fix para el scrollbar track que el usuario cambió a rojo */
+::-webkit-scrollbar-track {
+  background: #f8f9fa; /* Fondo claro más profesional */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1068db;
+  border-radius: 10px;
+}
+
+/* Mejoras en Inputs */
+.form-control:focus, .form-select:focus {
+  border-color: #1068db;
+  box-shadow: 0 0 0 0.25rem rgba(16, 104, 219, 0.15);
+}
+
+/* Animaciones de Entrada Suave para Páginas */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
 }
