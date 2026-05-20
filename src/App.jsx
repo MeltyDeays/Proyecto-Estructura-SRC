@@ -6,6 +6,8 @@ import Inicio from "./view/Inicio";
 import Categorias from "./view/Categorias";
 import Catalogo from "./view/Catalogo";
 import Productos from "./view/Productos";
+import Empleados from "./view/Empleados";
+import Permisos from "./view/Permisos";
 import Login from "./view/Login";
 import RutaProtegida from "./components/rutas/RutaProtegida";
 import Pagina404 from "./view/Pagina404";
@@ -23,6 +25,8 @@ const App = () => {
           <Route path="/categorias" element={<RutaProtegida><Categorias /></RutaProtegida>} />
           <Route path="/catalogo" element={<RutaProtegida><Catalogo /></RutaProtegida>} />
           <Route path="/productos" element={<RutaProtegida><Productos /></RutaProtegida>} />
+          <Route path="/empleados" element={<RutaProtegida><Empleados /></RutaProtegida>} />
+          <Route path="/permisos" element={<RutaProtegida><Permisos /></RutaProtegida>} />
           <Route path="*" element={<RutaProtegida><Pagina404 /></RutaProtegida>} />
         </Routes>
       </div>

@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Container, Nav, Navbar, Offcanvas, Button } from "react-bootstrap";
 import logo from "../../assets/react.svg";
-import { supabase } from "../../database/supabaseconfig";
+import { useAuth } from "../../context/AuthContext";
 
 const Encabezado = () => {
   const [mostrarMenu, setMostrarMenu] = useState(false);
   const navigate = useNavigate();
   const location = useLocation(); // Para detectar la ruta actual
+  const { tienePermiso, logout, usuario } = useAuth();
 
   const manejarToggle = () => setMostrarMenu(!mostrarMenu);
 
@@ -17,26 +18,19 @@ const Encabezado = () => {
   };
 
   const cerrarSesion = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      localStorage.removeItem("usuario-supabase");
-      setMostrarMenu(false);
-      navigate("/login");
-    } catch (err) {
-      console.error("Error cerrando sesión:", err.message);
-    }
+    await logout();
+    setMostrarMenu(false);
+    navigate("/login");
   };
 
   // Detectar rutas especiales
   const esLogin = location.pathname === "/login";
-  const esCatalogo = location.pathname === "/catalogo" && localStorage.getItem("usuario-supabase") === null;
+  const esCatalogo = location.pathname === "/catalogo" && !usuario;
 
   // Contenido del menú
   let contenidoMenu;
 
-  const estaLogueado = !!localStorage.getItem("usuario-supabase");
+  const estaLogueado = !!usuario;
 
   if (esLogin) {
     contenidoMenu = (
@@ -71,30 +65,54 @@ const Encabezado = () => {
     // Menú para administradores autenticados
     contenidoMenu = (
       <Nav className="ms-auto align-items-lg-center gap-1">
-        <Nav.Link 
-          onClick={() => manejarNavegacion("/")} 
-          className={`nav-link-custom ${location.pathname === '/' ? 'nav-link-active' : ''}`}
-        >
-          <i className="bi-house-fill me-2"></i> Inicio
-        </Nav.Link>
-        <Nav.Link 
-          onClick={() => manejarNavegacion("/categorias")} 
-          className={`nav-link-custom ${location.pathname === '/categorias' ? 'nav-link-active' : ''}`}
-        >
-          <i className="bi-grid-fill me-2"></i> Categorías
-        </Nav.Link>
-        <Nav.Link 
-          onClick={() => manejarNavegacion("/productos")} 
-          className={`nav-link-custom ${location.pathname === '/productos' ? 'nav-link-active' : ''}`}
-        >
-          <i className="bi-box-seam-fill me-2"></i> Productos
-        </Nav.Link>
-        <Nav.Link 
-          onClick={() => manejarNavegacion("/catalogo")} 
-          className={`nav-link-custom ${location.pathname === '/catalogo' ? 'nav-link-active' : ''}`}
-        >
-          <i className="bi-layout-text-window-reverse me-2"></i> Catálogo
-        </Nav.Link>
+        {tienePermiso('ver_inicio') && (
+          <Nav.Link 
+            onClick={() => manejarNavegacion("/")} 
+            className={`nav-link-custom ${location.pathname === '/' ? 'nav-link-active' : ''}`}
+          >
+            <i className="bi-house-fill me-2"></i> Inicio
+          </Nav.Link>
+        )}
+        {tienePermiso('ver_categorias') && (
+          <Nav.Link 
+            onClick={() => manejarNavegacion("/categorias")} 
+            className={`nav-link-custom ${location.pathname === '/categorias' ? 'nav-link-active' : ''}`}
+          >
+            <i className="bi-grid-fill me-2"></i> Categorías
+          </Nav.Link>
+        )}
+        {tienePermiso('ver_productos') && (
+          <Nav.Link 
+            onClick={() => manejarNavegacion("/productos")} 
+            className={`nav-link-custom ${location.pathname === '/productos' ? 'nav-link-active' : ''}`}
+          >
+            <i className="bi-box-seam-fill me-2"></i> Productos
+          </Nav.Link>
+        )}
+        {tienePermiso('ver_empleados') && (
+          <Nav.Link 
+            onClick={() => manejarNavegacion("/empleados")} 
+            className={`nav-link-custom ${location.pathname === '/empleados' ? 'nav-link-active' : ''}`}
+          >
+            <i className="bi-person-badge-fill me-2"></i> Empleados
+          </Nav.Link>
+        )}
+        {tienePermiso('ver_permisos') && (
+          <Nav.Link 
+            onClick={() => manejarNavegacion("/permisos")} 
+            className={`nav-link-custom ${location.pathname === '/permisos' ? 'nav-link-active' : ''}`}
+          >
+            <i className="bi-shield-lock-fill me-2"></i> Permisos
+          </Nav.Link>
+        )}
+        {tienePermiso('ver_catalogo') && (
+          <Nav.Link 
+            onClick={() => manejarNavegacion("/catalogo")} 
+            className={`nav-link-custom ${location.pathname === '/catalogo' ? 'nav-link-active' : ''}`}
+          >
+            <i className="bi-layout-text-window-reverse me-2"></i> Catálogo
+          </Nav.Link>
+        )}
         <Button 
           variant="outline-light" 
           className="btn-rounded border-0 ms-lg-2 opacity-75 hover-lift"
