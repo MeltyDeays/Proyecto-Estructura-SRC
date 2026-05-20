@@ -1,321 +1,486 @@
-import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import { Container, Row, Col, Button, Card, Spinner, Alert, Badge, Modal } from "react-bootstrap";
+import React, { useEffect, useState, useRef } from "react";
+import { Container, Row, Col, Button, Alert, Spinner, Card, Badge, Modal, Image } from "react-bootstrap";
 import { supabase } from "../database/supabaseconfig";
+import anime from "animejs/lib/anime.es.js";
 import ModalRegistroProducto from "../components/productos/ModalRegistroProducto";
+import ModalEdicionProducto from "../components/productos/ModalEdicionProducto";
+import ModalEliminacionProducto from "../components/productos/ModalEliminacionProducto";
 import NotificacionOperacion from "../components/NotificacionOperacion";
+import CuadroBusquedas from "../components/busquedas/CuadroBusquedas";
 
 const Productos = () => {
-  const location = useLocation();
   const [productos, setProductos] = useState([]);
   const [productosFiltrados, setProductosFiltrados] = useState([]);
-  const [filtroCategoria, setFiltroCategoria] = useState(location.state?.categoriaId || null);
   const [categorias, setCategorias] = useState([]);
+  const [textoBusqueda, setTextoBusqueda] = useState("");
   const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState(null);
-  const [toast, setToast] = useState({ mostrar: false, mensaje: "", tipo: "" });
+
   const [mostrarModal, setMostrarModal] = useState(false);
-  const [mostrarDetalles, setMostrarDetalles] = useState(false);
-  const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+  const [mostrarModalEdicion, setMostrarModalEdicion] = useState(false);
+  const [mostrarModalEliminar, setMostrarModalEliminar] = useState(false);
+  const [mostrarModalDetalles, setMostrarModalDetalles] = useState(false);
+
+  const [toast, setToast] = useState({ mostrar: false, mensaje: "", tipo: "" });
 
   const [nuevoProducto, setNuevoProducto] = useState({
     nombre_producto: "",
     descripcion_producto: "",
-    precio_producto: "",
-    stock_producto: "",
+    precio_venta: "",
     id_categoria: "",
-    imagen_url: "",
+    archivo: null,
   });
 
-  useEffect(() => {
-    inicializarVista();
-  }, []);
+  const [productoEditar, setProductoEditar] = useState({
+    id_producto: "",
+    nombre_producto: "",
+    descripcion_producto: "",
+    categoria_producto: "",
+    precio_venta: "",
+    url_imagen: "",
+    archivo: null,
+  });
 
-  useEffect(() => {
-    if (filtroCategoria) {
-      setProductosFiltrados(productos.filter(p => p.id_categoria === filtroCategoria));
-    } else {
-      setProductosFiltrados(productos);
-    }
-  }, [filtroCategoria, productos]);
+  const [productoEliminar, setProductoEliminar] = useState(null);
+  const [productoDetalle, setProductoDetalle] = useState(null);
 
-  const inicializarVista = async () => {
-    setCargando(true);
-    await Promise.all([obtenerProductos(), obtenerCategorias()]);
-    setCargando(false);
-  };
-
-  const obtenerProductos = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("productos")
-        .select("*, categorias(nombre_categoria)")
-        .order("creado_el", { ascending: false });
-
-      if (error) throw error;
-      setProductos(data || []);
-    } catch (err) {
-      console.error("Error al obtener productos:", err.message);
-      setError("No se pudieron cargar los productos.");
-    }
-  };
-
-  const obtenerCategorias = async () => {
-    try {
-      const { data, error } = await supabase.from("categorias").select("*");
-      if (error) throw error;
-      setCategorias(data || []);
-    } catch (err) {
-      console.error("Error al obtener categorías:", err.message);
-    }
-  };
-
+  // Handlers para Registro
   const manejoCambioInput = (e) => {
     const { name, value } = e.target;
     setNuevoProducto((prev) => ({ ...prev, [name]: value }));
   };
 
-  const agregarProducto = async () => {
-    try {
-      const { error } = await supabase.from("productos").insert([
-        {
-          nombre_producto: nuevoProducto.nombre_producto,
-          descripcion_producto: nuevoProducto.descripcion_producto,
-          precio_producto: parseFloat(nuevoProducto.precio_producto),
-          stock_producto: parseInt(nuevoProducto.stock_producto),
-          id_categoria: nuevoProducto.id_categoria,
-          imagen_url: nuevoProducto.imagen_url,
-        },
-      ]);
-
-      if (error) throw error;
-
-      // 1. Mostrar notificación PRIMERO
-      setToast({
-        mostrar: true,
-        mensaje: `Producto "${nuevoProducto.nombre_producto}" registrado correctamente.`,
-        tipo: "exito",
-      });
-
-      // 2. Limpiar formulario
-      setNuevoProducto({
-        nombre_producto: "",
-        descripcion_producto: "",
-        precio_producto: "",
-        stock_producto: "",
-        id_categoria: "",
-        imagen_url: "",
-      });
-
-      // 3. Cerrar el modal MANUALMENTE
-      setMostrarModal(false);
-
-      // 4. Refrescar datos
-      obtenerProductos();
-    } catch (err) {
-      console.error("Error al agregar producto:", err.message);
-      setToast({ mostrar: true, mensaje: "Error al registrar el producto.", tipo: "error" });
+  const manejoCambioArchivo = (e) => {
+    const archivo = e.target.files[0];
+    if (archivo && archivo.type.startsWith("image/")) {
+      setNuevoProducto((prev) => ({ ...prev, archivo }));
+    } else {
+      alert("Selecciona una imagen válida (JPG, PNG, etc.)");
     }
   };
 
-  const verDetalles = (producto) => {
-    setProductoSeleccionado(producto);
-    setMostrarDetalles(true);
+  // Handlers para Edición
+  const manejoCambioInputEdicion = (e) => {
+    const { name, value } = e.target;
+    setProductoEditar((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const manejoCambioArchivoActualizar = (e) => {
+    const archivo = e.target.files[0];
+    if (archivo && archivo.type.startsWith("image/")) {
+      setProductoEditar((prev) => ({ ...prev, archivo }));
+    } else {
+      alert("Selecciona una imagen válida (JPG, PNG, etc.)");
+    }
+  };
+
+  const manejarBusqueda = (e) => {
+    setTextoBusqueda(e.target.value);
+  };
+
+  const headerRef = useRef(null);
+
+  useEffect(() => {
+    const cargarDatos = async () => {
+      setCargando(true);
+      await Promise.all([obtenerProductos(), cargarCategorias()]);
+      setCargando(false);
+    };
+    cargarDatos();
+  }, []);
+
+  useEffect(() => {
+    // Header animation
+    if (headerRef.current) {
+      anime({
+        targets: headerRef.current,
+        translateY: [-20, 0],
+        opacity: [0, 1],
+        easing: 'easeOutExpo',
+        duration: 800,
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    // Cards animation when they load
+    if (!cargando && productosFiltrados.length > 0) {
+      anime({
+        targets: '.producto-card',
+        scale: [0.9, 1],
+        opacity: [0, 1],
+        translateY: [20, 0],
+        easing: 'easeOutExpo',
+        duration: 600,
+        delay: anime.stagger(50)
+      });
+    }
+  }, [cargando, productosFiltrados.length]);
+
+  useEffect(() => {
+    if (textoBusqueda.trim() === "") {
+      setProductosFiltrados(productos);
+    } else {
+      const filtrados = productos.filter((p) => {
+        const nombre = p.nombre_producto?.toLowerCase() || "";
+        const descripcion = p.descripcion_producto?.toLowerCase() || "";
+        const precio = p.precio_venta?.toString() || "";
+        const termino = textoBusqueda.toLowerCase();
+        return (
+          nombre.includes(termino) ||
+          descripcion.includes(termino) ||
+          precio.includes(termino)
+        );
+      });
+      setProductosFiltrados(filtrados);
+    }
+  }, [textoBusqueda, productos]);
+
+  const obtenerProductos = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("productos")
+        .select(`
+          *,
+          categorias (
+            nombre_categoria
+          )
+        `)
+        .order("id_producto", { ascending: false });
+
+      if (error) throw error;
+      console.log("Productos cargados:", data);
+      setProductos(data || []);
+      setProductosFiltrados(data || []);
+    } catch (err) {
+      console.error("Error al obtener productos:", err.message);
+    }
+  };
+
+  const cargarCategorias = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("categorias")
+        .select("*")
+        .order("id_categoria", { ascending: true });
+      if (error) throw error;
+      setCategorias(data || []);
+    } catch (err) {
+      console.error("Error al cargar categorías:", err);
+    }
+  };
+
+  const agregarProducto = async () => {
+    try {
+      if (
+        !nuevoProducto.nombre_producto ||
+        !nuevoProducto.id_categoria ||
+        !nuevoProducto.precio_venta ||
+        !nuevoProducto.archivo
+      ) {
+        setToast({
+          mostrar: true,
+          mensaje: "Completa los campos obligatorios (nombre, categoría, precio e imagen).",
+          tipo: "advertencia",
+        });
+        return;
+      }
+
+      setMostrarModal(false);
+
+      const nombreArchivo = `${Date.now()}_${nuevoProducto.archivo.name}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("imagenes_productos")
+        .upload(nombreArchivo, nuevoProducto.archivo);
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from("imagenes_productos")
+        .getPublicUrl(nombreArchivo);
+
+      const urlPublica = urlData.publicUrl;
+
+      const { error: insertError } = await supabase.from("productos").insert([
+        {
+          nombre_producto: nuevoProducto.nombre_producto,
+          descripcion_producto: nuevoProducto.descripcion_producto,
+          categoria_producto: nuevoProducto.id_categoria,
+          precio_venta: parseFloat(nuevoProducto.precio_venta),
+          url_imagen: urlPublica,
+        },
+      ]);
+
+      if (insertError) throw insertError;
+
+      setToast({
+        mostrar: true,
+        mensaje: "Producto registrado correctamente",
+        tipo: "exito",
+      });
+
+      setNuevoProducto({
+        nombre_producto: "",
+        descripcion_producto: "",
+        precio_venta: "",
+        id_categoria: "",
+        archivo: null,
+      });
+
+      obtenerProductos();
+    } catch (err) {
+      console.error("Error al agregar producto:", err);
+      setToast({ mostrar: true, mensaje: "Error al registrar producto", tipo: "error" });
+    }
+  };
+
+  const actualizarProducto = async () => {
+    try {
+      if (!productoEditar.nombre_producto.trim() || !productoEditar.categoria_producto || !productoEditar.precio_venta) {
+        setToast({ mostrar: true, mensaje: "Completa los campos obligatorios", tipo: "advertencia" });
+        return;
+      }
+
+      setMostrarModalEdicion(false);
+
+      let datosActualizados = {
+        nombre_producto: productoEditar.nombre_producto,
+        descripcion_producto: productoEditar.descripcion_producto || null,
+        categoria_producto: productoEditar.categoria_producto,
+        precio_venta: parseFloat(productoEditar.precio_venta),
+        url_imagen: productoEditar.url_imagen,
+      };
+
+      if (productoEditar.archivo) {
+        const nombreArchivo = `${Date.now()}_${productoEditar.archivo.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from('imagenes_productos')
+          .upload(nombreArchivo, productoEditar.archivo);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from('imagenes_productos')
+          .getPublicUrl(nombreArchivo);
+
+        datosActualizados.url_imagen = urlData.publicUrl;
+
+        if (productoEditar.url_imagen) {
+          const nombreAnterior = productoEditar.url_imagen.split('/').pop().split('?')[0];
+          await supabase.storage.from('imagenes_productos').remove([nombreAnterior]).catch(() => {});
+        }
+      }
+
+      const { error } = await supabase
+        .from('productos')
+        .update(datosActualizados)
+        .eq('id_producto', productoEditar.id_producto);
+
+      if (error) throw error;
+
+      await obtenerProductos();
+      setProductoEditar({
+        id_producto: null,
+        nombre_producto: "",
+        descripcion_producto: "",
+        categoria_producto: "",
+        precio_venta: "",
+        url_imagen: "",
+        archivo: null,
+      });
+
+      setToast({ mostrar: true, mensaje: "Producto actualizado correctamente", tipo: "exito" });
+    } catch (error) {
+      console.error("Error al actualizar: ", error);
+      setToast({ mostrar: true, mensaje: "Error al actualizar producto", tipo: "error" });
+    }
+  };
+
+  const eliminarProducto = async () => {
+    try {
+      const { error } = await supabase
+        .from("productos")
+        .delete()
+        .eq("id_producto", productoEliminar.id_producto);
+
+      if (error) throw error;
+
+      setToast({ mostrar: true, mensaje: "Producto eliminado correctamente", tipo: "exito" });
+      setMostrarModalEliminar(false);
+      obtenerProductos();
+    } catch (err) {
+      console.error("Error al eliminar producto:", err);
+      setToast({ mostrar: true, mensaje: "Error al eliminar producto", tipo: "error" });
+    }
+  };
+
+  const abrirModalEdicion = (prod) => {
+    setProductoEditar({
+      id_producto: prod.id_producto,
+      nombre_producto: prod.nombre_producto,
+      descripcion_producto: prod.descripcion_producto,
+      categoria_producto: prod.categoria_producto,
+      precio_venta: prod.precio_venta,
+      url_imagen: prod.url_imagen,
+      archivo: null,
+    });
+    setMostrarModalEdicion(true);
+  };
+
+  const abrirModalEliminar = (prod) => {
+    setProductoEliminar(prod);
+    setMostrarModalEliminar(true);
+  };
+
+  const abrirModalDetalles = (prod) => {
+    setProductoDetalle(prod);
+    setMostrarModalDetalles(true);
+  };
+
+  const formatearPrecio = (precio) => {
+    return new Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0,
+    }).format(precio);
   };
 
   return (
-    <div className="animate-fade-in">
-      {/* Hero Section for Productos */}
-      <div className="bg-primary bg-gradient text-white py-5 mb-5 shadow-sm rounded-bottom-5 position-relative">
-        <Container className="py-4">
-          <Row className="align-items-center">
-            <Col md={8} className="animate-fade-in-up">
-              <Badge bg="white" className="text-primary rounded-pill px-3 py-2 mb-3 fw-bold shadow-sm">
-                Control de Inventario
-              </Badge>
-              <h1 className="display-4 fw-bold mb-2">Gestión de <span className="text-info">Productos</span></h1>
-              <p className="lead opacity-75 mb-0">
-                Administra tu catálogo de productos con precisión y facilidad.
-              </p>
-            </Col>
-            <Col md={4} className="text-end d-none d-md-block animate-fade-in-up delay-1">
-              <Button
-                variant="info"
-                onClick={() => setMostrarModal(true)}
-                className="btn-rounded text-white shadow-lg px-4 py-2 h5 mb-0"
-              >
-                <i className="bi-plus-lg me-2"></i> Nuevo Producto
-              </Button>
-            </Col>
-          </Row>
-        </Container>
-      </div>
+    <Container className="mt-3">
+      <Row className="align-items-center mb-3" ref={headerRef} style={{ opacity: 0 }}>
+        <Col className="d-flex align-items-center">
+          <h3 className="mb-0">
+            <i className="bi-bag-heart-fill me-2"></i> Productos
+          </h3>
+        </Col>
 
-      <Container className="mb-5">
-        {/* Floating action button for mobile */}
-        <div className="d-md-none text-center mb-4">
-          <Button
-            variant="primary"
-            onClick={() => setMostrarModal(true)}
-            className="btn-rounded shadow px-4"
-          >
-            <i className="bi-plus-lg me-2"></i> Nuevo Producto
+        <Col xs={12} sm={6} md={5} lg={3} className="text-end">
+          <Button onClick={() => setMostrarModal(true)} size="md">
+            <i className="bi-plus-lg"></i>
+            <span className="d-none d-sm-inline ms-2">Nuevo Producto</span>
           </Button>
+        </Col>
+      </Row>
+
+      <hr />
+
+      <Row className="mb-4">
+        <Col md={6} lg={5}>
+          <CuadroBusquedas
+            textoBusqueda={textoBusqueda}
+            manejarCambioBusqueda={manejarBusqueda}
+            placeholder="Buscar por nombre, descripción o precio..."
+          />
+        </Col>
+      </Row>
+
+      {cargando ? (
+        <div className="text-center py-5">
+          <Spinner animation="border" variant="primary" />
+          <p className="mt-2 text-muted">Cargando productos...</p>
         </div>
-
-        {filtroCategoria && (
-          <Alert variant="info" className="d-flex justify-content-between align-items-center rounded-4 mb-4 animate-fade-in border-0 shadow-sm bg-primary bg-opacity-10 text-primary">
-            <span className="fw-medium">
-              <i className="bi-funnel-fill me-2"></i>
-              Mostrando: <strong>{categorias.find(c => c.id_categoria === filtroCategoria)?.nombre_categoria}</strong>
-            </span>
-            <Button variant="primary" size="sm" className="btn-rounded px-3 shadow-sm" onClick={() => setFiltroCategoria(null)}>
-              Ver todos
-            </Button>
-          </Alert>
-        )}
-
-        {cargando ? (
-          <div className="text-center py-5 animate-fade-in">
-            <Spinner animation="grow" variant="primary" />
-            <p className="mt-3 text-muted fw-medium">Sincronizando inventario...</p>
-          </div>
-        ) : error ? (
-          <Alert variant="danger" className="text-center rounded-4 animate-fade-in-up shadow-sm">
-            <i className="bi-exclamation-triangle-fill me-2"></i> {error}
-          </Alert>
-        ) : productosFiltrados.length === 0 ? (
-          <Card className="text-center border-0 bg-light py-5 shadow-sm rounded-4 animate-fade-in-up">
-            <Card.Body>
-              <i className="bi-box text-muted display-1 mb-3"></i>
-              <h4 className="text-muted fw-bold">No hay productos en esta selección</h4>
-              <p className="text-muted mb-4">Comienza agregando productos para gestionar tu catálogo.</p>
-              <Button variant="primary" className="btn-rounded" onClick={() => setMostrarModal(true)}>
-                Agregar mi primer producto
-              </Button>
-            </Card.Body>
-          </Card>
-        ) : (
-          <Row xs={1} sm={2} lg={3} xl={4} className="g-4">
-            {productosFiltrados.map((prod, index) => (
-              <Col key={prod.id_producto} className={`animate-fade-in-up delay-${(index % 3) + 1}`}>
-                <Card className="h-100 border-0 shadow-sm hover-lift rounded-4 overflow-hidden glass-card">
-                  <div className="position-relative overflow-hidden" style={{ height: "200px" }}>
-                    <Card.Img
-                      variant="top"
-                      src={prod.imagen_url || "https://placehold.co/600x400?text=Sin+Imagen"}
-                      className="h-100 w-100 object-fit-cover transition-all"
-                    />
-                    <Badge bg="primary" className="position-absolute top-0 end-0 m-3 shadow-sm rounded-pill px-3 py-2">
-                      ${prod.precio_producto.toFixed(2)}
-                    </Badge>
-                  </div>
-                  <Card.Body className="p-4">
-                    <div className="mb-2 text-primary small fw-bold text-uppercase tracking-wider">
-                      {prod.categorias?.nombre_categoria || "General"}
-                    </div>
-                    <h5 className="card-title fw-bold text-dark mb-2 text-truncate">{prod.nombre_producto}</h5>
-                    <p className="card-text text-muted small line-clamp-3 mb-0" style={{ minHeight: "3.6em" }}>
-                      {prod.descripcion_producto || "Sin descripción disponible."}
-                    </p>
-                  </Card.Body>
-                  <Card.Footer className="bg-transparent border-0 p-4 pt-0 d-flex justify-content-between align-items-center">
-                    <div className="d-flex align-items-center">
-                      <i className={`bi-circle-fill me-2 small ${prod.stock_producto > 5 ? "text-success" : "text-danger"}`}></i>
-                      <span className="small fw-bold text-muted">{prod.stock_producto} en stock</span>
-                    </div>
-                    <Button variant="outline-primary" size="sm" className="btn-rounded px-3" onClick={() => verDetalles(prod)}>
-                      Detalles
-                    </Button>
-                  </Card.Footer>
-                </Card>
-              </Col>
-            ))}
-          </Row>
-        )}
-
-        <ModalRegistroProducto
-          mostrarModal={mostrarModal}
-          setMostrarModal={setMostrarModal}
-          categorias={categorias}
-          nuevoProducto={nuevoProducto}
-          manejoCambioInput={manejoCambioInput}
-          agregarProducto={agregarProducto}
-        />
-
-        {/* Modal de Detalles */}
-        <Modal 
-          show={mostrarDetalles} 
-          onHide={() => setMostrarDetalles(false)} 
-          centered 
-          size="md"
-          contentClassName="modal-content-custom"
-        >
-          <Modal.Header closeButton className="modal-header-custom">
-            <Modal.Title>
-              <i className="bi-info-circle-fill me-2 text-primary"></i> Detalles del Producto
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body className="modal-body-custom text-center">
-            {productoSeleccionado && (
-              <div className="animate-fade-in">
-                <div className="position-relative mb-4 overflow-hidden rounded-4 shadow-sm" style={{ height: '250px' }}>
-                  <img 
-                    src={productoSeleccionado.imagen_url || "https://placehold.co/600x400?text=Sin+Imagen"} 
-                    alt={productoSeleccionado.nombre_producto}
-                    className="h-100 w-100 object-fit-cover hover-lift transition-all"
+      ) : productosFiltrados.length === 0 ? (
+        <Alert variant="info" className="text-center">
+          No se encontraron productos disponibles.
+        </Alert>
+      ) : (
+        <Row xs={1} md={2} lg={3} xl={4} className="g-4">
+          {productosFiltrados.map((prod) => (
+            <Col key={prod.id_producto} className="producto-card" style={{ opacity: 0 }}>
+              <Card className="h-100 shadow-sm border-0 rounded-4 overflow-hidden hover-lift">
+                <div style={{ height: "200px", overflow: "hidden", cursor: "pointer" }} onClick={() => abrirModalDetalles(prod)}>
+                  <Card.Img
+                    variant="top"
+                    src={prod.url_imagen || "https://placehold.co/600x400?text=Sin+Imagen"}
+                    className="h-100 w-100 object-fit-cover"
                   />
-                  <Badge bg="primary" className="position-absolute top-0 end-0 m-3 shadow-sm rounded-pill px-3 py-2">
-                    ${productoSeleccionado.precio_producto.toFixed(2)}
-                  </Badge>
                 </div>
-                
-                <div className="mb-2 text-primary small fw-bold text-uppercase tracking-wider">
-                  {productoSeleccionado.categorias?.nombre_categoria || "General"}
-                </div>
-                <h3 className="fw-bold text-dark mb-3">{productoSeleccionado.nombre_producto}</h3>
-                
-                <Row className="g-3 mb-4">
-                  <Col xs={6}>
-                    <div className="p-3 bg-light rounded-4 border border-white shadow-sm h-100">
-                      <div className="small text-muted text-uppercase fw-bold mb-1">Precio Unitario</div>
-                      <div className="h4 fw-bold text-primary mb-0">${productoSeleccionado.precio_producto.toFixed(2)}</div>
-                    </div>
-                  </Col>
-                  <Col xs={6}>
-                    <div className={`p-3 rounded-4 border border-white shadow-sm h-100 ${productoSeleccionado.stock_producto > 5 ? 'bg-success bg-opacity-10' : 'bg-danger bg-opacity-10'}`}>
-                      <div className="small text-muted text-uppercase fw-bold mb-1">Stock Disponible</div>
-                      <div className={`h4 fw-bold mb-0 ${productoSeleccionado.stock_producto > 5 ? 'text-success' : 'text-danger'}`}>
-                        {productoSeleccionado.stock_producto} <small className="h6">uds</small>
-                      </div>
-                    </div>
-                  </Col>
-                </Row>
-                
-                <div className="text-start">
-                  <div className="small text-muted text-uppercase fw-bold mb-2 ps-1">Descripción del Producto</div>
-                  <div className="p-3 bg-white border rounded-4 text-muted small shadow-inner" style={{ minHeight: '80px', background: 'linear-gradient(to bottom, #ffffff, #f9fafb)' }}>
-                    {productoSeleccionado.descripcion_producto || "Sin descripción adicional disponible para este producto."}
+                <Card.Body>
+                  <div className="d-flex justify-content-between align-items-start mb-2">
+                    <Badge bg="info" className="text-dark">
+                      {prod.categorias?.nombre_categoria || "General"}
+                    </Badge>
+                    <span className="fw-bold text-primary">
+                      {formatearPrecio(prod.precio_venta)}
+                    </span>
                   </div>
-                </div>
-              </div>
-            )}
-          </Modal.Body>
-          <Modal.Footer className="modal-footer-custom">
-            <Button variant="primary" className="w-100 py-2 fw-bold" onClick={() => setMostrarDetalles(false)}>
-              Entendido
-            </Button>
-          </Modal.Footer>
-        </Modal>
+                  <Card.Title className="h5 fw-bold text-truncate">{prod.nombre_producto}</Card.Title>
+                  <Card.Text className="text-muted small text-truncate-2">
+                    {prod.descripcion_producto || "Sin descripción."}
+                  </Card.Text>
+                </Card.Body>
+                <Card.Footer className="bg-white border-0 pb-3 d-flex gap-2">
+                  <Button variant="outline-primary" size="sm" className="flex-grow-1 rounded-pill" onClick={() => abrirModalDetalles(prod)}>
+                    Detalles
+                  </Button>
+                  <Button variant="outline-warning" size="sm" className="rounded-circle" onClick={() => abrirModalEdicion(prod)}>
+                    <i className="bi-pencil"></i>
+                  </Button>
+                  <Button variant="outline-danger" size="sm" className="rounded-circle" onClick={() => abrirModalEliminar(prod)}>
+                    <i className="bi-trash"></i>
+                  </Button>
+                </Card.Footer>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      )}
 
-        <NotificacionOperacion
-          mostrar={toast.mostrar}
-          mensaje={toast.mensaje}
-          tipo={toast.tipo}
-          onCerrar={() => setToast({ ...toast, mostrar: false })}
-        />
-      </Container>
-    </div>
+      {/* Modal de Registro */}
+      <ModalRegistroProducto
+        mostrarModal={mostrarModal}
+        setMostrarModal={setMostrarModal}
+        nuevoProducto={nuevoProducto}
+        manejoCambioInput={manejoCambioInput}
+        manejoCambioArchivo={manejoCambioArchivo}
+        agregarProducto={agregarProducto}
+        categorias={categorias}
+      />
+
+      {/* Modal de Edición */}
+      <ModalEdicionProducto 
+        mostrarModalEdicion={mostrarModalEdicion}
+        setMostrarModalEdicion={setMostrarModalEdicion}
+        productoEditar={productoEditar}
+        manejoCambioInputEdicion={manejoCambioInputEdicion}
+        manejoCambioArchivoActualizar={manejoCambioArchivoActualizar}
+        actualizarProducto={actualizarProducto}
+        categorias={categorias}
+      />
+
+      {/* Modal de Eliminación */}
+      <ModalEliminacionProducto 
+        mostrarModal={mostrarModalEliminar}
+        setMostrarModal={setMostrarModalEliminar}
+        productoEliminar={productoEliminar}
+        eliminarProducto={eliminarProducto}
+      />
+
+      {/* Modal de Detalles */}
+      <Modal show={mostrarModalDetalles} onHide={() => setMostrarModalDetalles(false)} centered size="md">
+        <Modal.Header closeButton>
+          <Modal.Title>Detalles del Producto</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center">
+          <Image src={productoDetalle?.url_imagen} fluid className="rounded-4 mb-3 shadow-sm" style={{ maxHeight: "300px" }} />
+          <h4 className="fw-bold">{productoDetalle?.nombre_producto}</h4>
+          <Badge bg="info" className="text-dark mb-2">{productoDetalle?.categorias?.nombre_categoria}</Badge>
+          <p className="text-primary fw-bold h5">{formatearPrecio(productoDetalle?.precio_venta || 0)}</p>
+          <hr />
+          <p className="text-muted text-start px-3">{productoDetalle?.descripcion_producto || "Sin descripción disponible."}</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setMostrarModalDetalles(false)}>Cerrar</Button>
+        </Modal.Footer>
+      </Modal>
+
+      <NotificacionOperacion
+        mostrar={toast.mostrar}
+        mensaje={toast.mensaje}
+        tipo={toast.tipo}
+        onCerrar={() => setToast({ ...toast, mostrar: false })}
+      />
+    </Container>
   );
 };
 

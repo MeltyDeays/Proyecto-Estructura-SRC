@@ -1,153 +1,242 @@
-/* src/App.css */
+/* src/App.css - LA MAISON WARM RETRO-EDITORIAL DESIGN SYSTEM */
 
-/* Empuja el contenido principal debajo del Navbar fijo para que no lo tape */
-.margen-superior-main {
-  margin-top: 0px; /* Reducido para evitar doble espacio con el Hero */
-  padding: 20px;
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --primary: #F26430; /* Warm terracotta orange */
+  --primary-glow: rgba(242, 100, 48, 0.25);
+  --secondary: #CA8A04; /* Gold accent */
+  --bg-main: #FAF6F0; /* Warm cream/beige background */
+  --text-main: #352520; /* Dark chocolate / charcoal */
+  --text-muted: #705E59; /* Muted warm brown */
+  --border-main: #352520; /* Solid border color */
 }
 
-.color-navbar {
-  background-color: #1068db !important;
-  background-image: linear-gradient(90deg, #121b96 0%, #2889b6 50%, #2697cc 100%);
-  z-index: 1030; /* Asegura que el navbar esté por encima de casi todo */
+body {
+  background-color: var(--bg-main) !important;
+  color: var(--text-main) !important;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-/* Fix para Toast oculto por Navbar */
-.toast-container {
-  margin-top: 80px !important; /* Baja la notificación debajo del Navbar */
-  z-index: 1060 !important; /* Por encima del Navbar */
+/* Forzar colores de texto por defecto */
+h1, h2, h3, h4, h5, h6, .display-3, .display-4, .card-title {
+  color: var(--text-main) !important;
+  font-family: 'Playfair Display', Georgia, serif !important;
+  font-weight: 700 !important;
 }
 
-/* Reducción de espacios excesivos */
-.mb-5 {
-  margin-bottom: 2rem !important; /* Reducido de 3rem */
+p, label, td, th, span {
+  color: var(--text-main) !important;
 }
 
-.py-5 {
-  padding-top: 2rem !important;
-  padding-bottom: 2rem !important;
+.text-muted {
+  color: var(--text-muted) !important;
 }
 
-.rounded-bottom-5 {
-  border-bottom-left-radius: 2rem !important;
-  border-bottom-right-radius: 2rem !important;
+/* =========================================
+   REDISEÑO DE COMPONENTES BOOTSTRAP (WARM STYLE)
+   ========================================= */
+
+.bg-white, .bg-light { 
+  background-color: #ffffff !important; 
+  color: var(--text-main) !important; 
 }
 
-/* --- ESTILOS PARA MODALES MODERNOS --- */
-.modal-content-custom {
-  background: rgba(255, 255, 255, 0.95) !important;
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  border-radius: 24px !important;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+.card {
+  background: #ffffff !important;
+  color: var(--text-main) !important;
+  border: 2px solid var(--border-main) !important;
+  box-shadow: 4px 4px 0px var(--border-main) !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease-in-out;
+}
+
+.glass-card {
+  background: #ffffff !important;
+  border: 2px solid var(--border-main) !important;
+  box-shadow: 4px 4px 0px var(--border-main) !important;
+  border-radius: 8px !important;
+}
+
+.hover-lift:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px var(--border-main) !important;
+  border-color: var(--border-main) !important;
+}
+
+/* =========================================
+   TABLAS CON ESTILO DE RESTAURANTE
+   ========================================= */
+.table {
+  color: var(--text-main) !important;
+  border: 2px solid var(--border-main) !important;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 8px;
   overflow: hidden;
+  background: #ffffff !important;
 }
 
-.modal-header-custom {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
-  padding: 1.5rem 2rem !important;
-  background: transparent !important;
-}
-
-.modal-header-custom .modal-title {
+.table th {
+  background-color: #FAF6F0 !important;
+  color: var(--text-main) !important;
+  border-bottom: 2px solid var(--border-main) !important;
   font-weight: 700;
-  color: #1e3d87;
-  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
 }
 
-.modal-body-custom {
-  padding: 2rem !important;
+.table td {
+  border-bottom: 1px solid rgba(53, 37, 32, 0.1) !important;
 }
 
-.modal-footer-custom {
-  border-top: 1px solid rgba(0, 0, 0, 0.05) !important;
-  padding: 1.25rem 2rem !important;
-  background: rgba(0, 0, 0, 0.02);
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(242, 100, 48, 0.03) !important;
 }
 
-/* Estilo para los inputs dentro de modales */
-.modal-body-custom .form-label {
+/* =========================================
+   NAVBAR (HEADER ELEGANTE)
+   ========================================= */
+.color-navbar {
+  background-color: var(--bg-main) !important;
+  border-bottom: 2px solid var(--border-main) !important;
+  box-shadow: 0 4px 12px rgba(53, 37, 32, 0.05);
+  z-index: 1030;
+}
+
+.nav-link-custom {
+  color: var(--text-muted) !important;
+  transition: all 0.2s ease-in-out;
   font-weight: 600;
-  color: #4a5568;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
+  padding: 0.6rem 1.2rem !important;
+  border-radius: 6px !important;
+  margin: 0 4px;
 }
 
-.modal-body-custom .form-control,
-.modal-body-custom .form-select {
+.nav-link-custom:hover {
+  color: var(--text-main) !important;
+  background: rgba(242, 100, 48, 0.1) !important;
+}
+
+.nav-link-active {
+  color: #ffffff !important;
+  background: var(--primary) !important;
+  border: 2px solid var(--border-main) !important;
+  box-shadow: 2px 2px 0px var(--border-main) !important;
+}
+
+.nav-link-active i, .nav-link-active span {
+  color: #ffffff !important;
+}
+
+.navbar-brand span {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.5rem;
+  letter-spacing: -0.5px;
+}
+
+/* =========================================
+   BOTONES CON SOMBRA NEGRA (LA MAISON STYLE)
+   ========================================= */
+.btn-rounded {
+  border-radius: 6px !important;
+  padding: 10px 24px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: all 0.15s ease-in-out;
+  border: 2px solid var(--border-main) !important;
+}
+
+.btn-primary, .btn-info, .btn-success {
+  background: var(--primary) !important;
+  color: #ffffff !important;
+  box-shadow: 3px 3px 0px var(--border-main) !important;
+}
+
+.btn-primary:hover, .btn-info:hover, .btn-success:hover {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0px var(--border-main) !important;
+}
+
+.btn-primary:active, .btn-info:active, .btn-success:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0px 0px 0px var(--border-main) !important;
+}
+
+.btn-outline-primary, .btn-outline-danger, .btn-outline-light {
+  background: #ffffff !important;
+  color: var(--text-main) !important;
+  border: 2px solid var(--border-main) !important;
+  box-shadow: 3px 3px 0px var(--border-main) !important;
+}
+
+.btn-outline-danger {
+  color: #dc3545 !important;
+}
+
+.btn-outline-primary:hover, .btn-outline-danger:hover, .btn-outline-light:hover {
+  background: rgba(242, 100, 48, 0.05) !important;
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0px var(--border-main) !important;
+}
+
+/* =========================================
+   INPUTS Y FORMULARIOS
+   ========================================= */
+.form-control, .form-select, .input-group-text {
+  background: #ffffff !important;
+  border: 2px solid var(--border-main) !important;
+  color: var(--text-main) !important;
+  border-radius: 6px;
+  padding: 0.8rem 1rem;
+  transition: all 0.15s ease-in-out;
+}
+
+.form-control::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.6;
+}
+
+.form-control:focus, .form-select:focus {
+  background: #ffffff !important;
+  border-color: var(--border-main) !important;
+  box-shadow: 3px 3px 0px var(--border-main) !important;
+  transform: translate(-1px, -1px);
+}
+
+/* =========================================
+   MODALES EN TONOS CÁLIDOS
+   ========================================= */
+.modal-content {
+  background: #ffffff !important;
+  border: 3px solid var(--border-main) !important;
   border-radius: 12px !important;
-  padding: 0.75rem 1rem !important;
-  border: 1px solid #e2e8f0;
-  transition: all 0.2s ease;
+  box-shadow: 8px 8px 0px rgba(53, 37, 32, 0.15) !important;
+  color: var(--text-main);
 }
 
-.modal-body-custom .form-control:focus {
-  border-color: #1068db;
-  box-shadow: 0 0 0 4px rgba(16, 104, 219, 0.1);
-  transform: translateY(-1px);
+.modal-header {
+  border-bottom: 2px solid var(--border-main) !important;
+  background: var(--bg-main) !important;
 }
 
-/* Botones dentro de modales */
-.modal-footer-custom .btn {
-  border-radius: 12px !important;
-  padding: 0.6rem 1.5rem !important;
-  font-weight: 600;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.modal-footer {
+  border-top: 2px solid var(--border-main) !important;
+  background: var(--bg-main) !important;
 }
 
-.modal-footer-custom .btn-primary {
-  background: linear-gradient(135deg, #1068db 0%, #0a4da3 100%) !important;
-  border: none !important;
-  box-shadow: 0 4px 12px rgba(16, 104, 219, 0.25);
+.btn-close {
+  filter: none !important;
+  opacity: 0.8;
 }
 
-.modal-footer-custom .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(16, 104, 219, 0.35);
-}
-
-.modal-footer-custom .btn-secondary {
-  background: #f1f5f9 !important;
-  color: #475569 !important;
-  border: none !important;
-}
-
-.modal-footer-custom .btn-secondary:hover {
-  background: #e2e8f0 !important;
-  color: #1e293b !important;
-}
-
-/* Variantes para modales de eliminación */
-.modal-header-danger {
-  background: rgba(239, 68, 68, 0.05) !important;
-}
-
-.modal-header-danger .modal-title {
-  color: #dc2626 !important;
-}
-
-/* --- ESTILOS DE UI/UX (Restaurados y Optimizados) --- */
-
-.color-texto-marca {
-  color: #1e3d87 !important;
-  font-size: 18px;
-}
-
-.hover-shadow {
-  transition: all 0.3s ease;
-}
-
-.hover-shadow:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 1rem 3rem rgba(0,0,0,.175) !important;
-}
-
-.transition-all {
-  transition: all 0.3s ease;
-}
-
-.rounded-4 {
-  border-radius: 1rem !important;
+/* =========================================
+   UTILIDADES
+   ========================================= */
+.margen-superior-main {
+  margin-top: 0px;
+  padding: 20px;
 }
 
 .line-clamp-3 {
@@ -157,139 +246,30 @@
   overflow: hidden;
 }
 
-/* Animaciones nativas */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+.bg-primary {
+  background: var(--primary) !important;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.5s ease-out forwards;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
-.delay-1 { animation-delay: 0.1s; }
-.delay-2 { animation-delay: 0.2s; }
-.delay-3 { animation-delay: 0.3s; }
-
-/* Tarjetas con Glassmorphism suave */
-.glass-card {
-  background: rgba(255, 255, 255, 0.8) !important;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-}
-
-/* Efectos de Hover mejorados */
-.hover-lift {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.hover-lift:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.08) !important;
-}
-
-.btn-rounded {
-  border-radius: 50px;
-  padding: 10px 25px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
-}
-
-.btn-rounded:hover {
-  transform: scale(1.05);
-  box-shadow: 0 10px 20px rgba(16, 104, 219, 0.2);
-}
-
-.bg-primary-soft {
-  background-color: rgba(16, 104, 219, 0.1) !important;
+.icon-circle {
+  width: 65px;
+  height: 65px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 2px solid var(--border-main);
+  box-shadow: 2px 2px 0px var(--border-main);
+  margin-bottom: 1rem;
 }
 
 .badge {
-  font-weight: 600;
-  letter-spacing: 0.025em;
+  padding: 0.5em 0.8em;
+  font-weight: 700;
+  border: 1px solid var(--border-main);
+  border-radius: 4px;
 }
 
-.cursor-pointer {
-  cursor: pointer;
-}
-
-.tracking-wider {
-  letter-spacing: 0.1em;
-}
-
-.object-fit-cover {
-  object-fit: cover;
-}
-
-/* Scrollbar Personalizado */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-/* Mejoras en el Navbar */
-.nav-link-custom {
-  color: rgba(255, 255, 255, 0.7) !important;
-  transition: all 0.2s ease-in-out;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  padding: 0.6rem 1.2rem !important;
-  border-radius: 12px !important;
-  margin: 0 2px;
-}
-
-.nav-link-custom:hover {
-  color: #ffffff !important;
-  background: rgba(255, 255, 255, 0.15) !important;
-  transform: translateY(-1px);
-}
-
-.nav-link-active {
-  color: #1068db !important; /* Azul primario para contraste máximo */
-  background: #ffffff !important; /* Fondo blanco sólido */
-  font-weight: 700 !important;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15) !important;
-  transform: scale(1.05);
-}
-
-.nav-link-active i {
-  color: #1068db !important;
-}
-
-/* Fix para el scrollbar track que el usuario cambió a rojo */
-::-webkit-scrollbar-track {
-  background: #f8f9fa; /* Fondo claro más profesional */
-}
-
-::-webkit-scrollbar-thumb {
-  background: #1068db;
-  border-radius: 10px;
-}
-
-/* Mejoras en Inputs */
-.form-control:focus, .form-select:focus {
-  border-color: #1068db;
-  box-shadow: 0 0 0 0.25rem rgba(16, 104, 219, 0.15);
-}
-
-/* Animaciones de Entrada Suave para Páginas */
-.page-transition-enter {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.page-transition-enter-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 300ms, transform 300ms;
+.toast-container {
+  margin-top: 80px !important;
+  z-index: 1060 !important;
 }
