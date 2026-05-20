@@ -3,13 +3,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --primary: #F26430; /* Warm terracotta orange */
+  --primary: #F26430;
+  /* Warm terracotta orange */
   --primary-glow: rgba(242, 100, 48, 0.25);
-  --secondary: #CA8A04; /* Gold accent */
-  --bg-main: #FAF6F0; /* Warm cream/beige background */
-  --text-main: #352520; /* Dark chocolate / charcoal */
-  --text-muted: #705E59; /* Muted warm brown */
-  --border-main: #352520; /* Solid border color */
+  --secondary: #CA8A04;
+  /* Gold accent */
+  --bg-main: #FAF6F0;
+  /* Warm cream/beige background */
+  --text-main: #352520;
+  /* Dark chocolate / charcoal */
+  --text-muted: #705E59;
+  /* Muted warm brown */
+  --border-main: #352520;
+  /* Solid border color */
 }
 
 body {
@@ -19,13 +25,25 @@ body {
 }
 
 /* Forzar colores de texto por defecto */
-h1, h2, h3, h4, h5, h6, .display-3, .display-4, .card-title {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.display-3,
+.display-4,
+.card-title {
   color: var(--text-main) !important;
   font-family: 'Playfair Display', Georgia, serif !important;
   font-weight: 700 !important;
 }
 
-p, label, td, th, span {
+p,
+label,
+td,
+th,
+span {
   color: var(--text-main) !important;
 }
 
@@ -37,9 +55,10 @@ p, label, td, th, span {
    REDISEÑO DE COMPONENTES BOOTSTRAP (WARM STYLE)
    ========================================= */
 
-.bg-white, .bg-light { 
-  background-color: #ffffff !important; 
-  color: var(--text-main) !important; 
+.bg-white,
+.bg-light {
+  background-color: #ffffff !important;
+  color: var(--text-main) !important;
 }
 
 .card {
@@ -126,7 +145,8 @@ p, label, td, th, span {
   box-shadow: 2px 2px 0px var(--border-main) !important;
 }
 
-.nav-link-active i, .nav-link-active span {
+.nav-link-active i,
+.nav-link-active span {
   color: #ffffff !important;
 }
 
@@ -148,23 +168,31 @@ p, label, td, th, span {
   border: 2px solid var(--border-main) !important;
 }
 
-.btn-primary, .btn-info, .btn-success {
+.btn-primary,
+.btn-info,
+.btn-success {
   background: var(--primary) !important;
   color: #ffffff !important;
   box-shadow: 3px 3px 0px var(--border-main) !important;
 }
 
-.btn-primary:hover, .btn-info:hover, .btn-success:hover {
+.btn-primary:hover,
+.btn-info:hover,
+.btn-success:hover {
   transform: translate(1px, 1px);
   box-shadow: 2px 2px 0px var(--border-main) !important;
 }
 
-.btn-primary:active, .btn-info:active, .btn-success:active {
+.btn-primary:active,
+.btn-info:active,
+.btn-success:active {
   transform: translate(3px, 3px);
   box-shadow: 0px 0px 0px var(--border-main) !important;
 }
 
-.btn-outline-primary, .btn-outline-danger, .btn-outline-light {
+.btn-outline-primary,
+.btn-outline-danger,
+.btn-outline-light {
   background: #ffffff !important;
   color: var(--text-main) !important;
   border: 2px solid var(--border-main) !important;
@@ -175,7 +203,9 @@ p, label, td, th, span {
   color: #dc3545 !important;
 }
 
-.btn-outline-primary:hover, .btn-outline-danger:hover, .btn-outline-light:hover {
+.btn-outline-primary:hover,
+.btn-outline-danger:hover,
+.btn-outline-light:hover {
   background: rgba(242, 100, 48, 0.05) !important;
   transform: translate(1px, 1px);
   box-shadow: 2px 2px 0px var(--border-main) !important;
@@ -184,7 +214,9 @@ p, label, td, th, span {
 /* =========================================
    INPUTS Y FORMULARIOS
    ========================================= */
-.form-control, .form-select, .input-group-text {
+.form-control,
+.form-select,
+.input-group-text {
   background: #ffffff !important;
   border: 2px solid var(--border-main) !important;
   color: var(--text-main) !important;
@@ -198,7 +230,8 @@ p, label, td, th, span {
   opacity: 0.6;
 }
 
-.form-control:focus, .form-select:focus {
+.form-control:focus,
+.form-select:focus {
   background: #ffffff !important;
   border-color: var(--border-main) !important;
   box-shadow: 3px 3px 0px var(--border-main) !important;
@@ -242,7 +275,8 @@ p, label, td, th, span {
 .line-clamp-3 {
   display: -webkit-box;
   -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;  
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
