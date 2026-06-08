@@ -7,6 +7,7 @@ import ModalEdicionProducto from "../components/productos/ModalEdicionProducto";
 import ModalEliminacionProducto from "../components/productos/ModalEliminacionProducto";
 import NotificacionOperacion from "../components/NotificacionOperacion";
 import CuadroBusquedas from "../components/busquedas/CuadroBusquedas";
+import ModalQRProducto from "../components/productos/modales/ModalQRProducto";
 
 const Productos = () => {
   const [productos, setProductos] = useState([]);
@@ -19,6 +20,8 @@ const Productos = () => {
   const [mostrarModalEdicion, setMostrarModalEdicion] = useState(false);
   const [mostrarModalEliminar, setMostrarModalEliminar] = useState(false);
   const [mostrarModalDetalles, setMostrarModalDetalles] = useState(false);
+  const [mostrarModalQR, setMostrarModalQR] = useState(false);
+  const [productoQR, setProductoQR] = useState(null);
 
   const [toast, setToast] = useState({ mostrar: false, mensaje: "", tipo: "" });
 
@@ -345,6 +348,23 @@ const Productos = () => {
     }).format(precio);
   };
 
+  const copiarProducto = (producto) => {
+    const texto = `Producto: ${producto.nombre_producto}\nPrecio: ${formatearPrecio(producto.precio_venta)}\nDescripción: ${producto.descripcion_producto || "Sin descripción"}\nImagen: ${producto.url_imagen || "Sin imagen"}`;
+    navigator.clipboard.writeText(texto)
+      .then(() => {
+        setToast({ mostrar: true, mensaje: "Información del producto copiada al portapapeles.", tipo: "exito" });
+      })
+      .catch((err) => {
+        console.error("Error al copiar:", err);
+        setToast({ mostrar: true, mensaje: "Error al copiar al portapapeles.", tipo: "error" });
+      });
+  };
+
+  const generarQRImagen = (prod) => {
+    setProductoQR(prod);
+    setMostrarModalQR(true);
+  };
+
   return (
     <Container className="mt-3">
       <Row className="align-items-center mb-3" ref={headerRef} style={{ opacity: 0 }}>
@@ -410,13 +430,19 @@ const Productos = () => {
                   </Card.Text>
                 </Card.Body>
                 <Card.Footer className="bg-white border-0 pb-3 d-flex gap-2">
-                  <Button variant="outline-primary" size="sm" className="flex-grow-1 rounded-pill" onClick={() => abrirModalDetalles(prod)}>
+                  <Button variant="outline-primary" size="sm" className="flex-grow-1 rounded-pill" onClick={() => abrirModalDetalles(prod)} title="Ver Detalles">
                     Detalles
                   </Button>
-                  <Button variant="outline-warning" size="sm" className="rounded-circle" onClick={() => abrirModalEdicion(prod)}>
+                  <Button variant="outline-secondary" size="sm" className="rounded-circle" onClick={() => copiarProducto(prod)} title="Copiar al portapapeles">
+                    <i className="bi bi-clipboard"></i>
+                  </Button>
+                  <Button variant="outline-dark" size="sm" className="rounded-circle" onClick={() => generarQRImagen(prod)} title="Generar QR">
+                    <i className="bi bi-qr-code"></i>
+                  </Button>
+                  <Button variant="outline-warning" size="sm" className="rounded-circle" onClick={() => abrirModalEdicion(prod)} title="Editar Producto">
                     <i className="bi-pencil"></i>
                   </Button>
-                  <Button variant="outline-danger" size="sm" className="rounded-circle" onClick={() => abrirModalEliminar(prod)}>
+                  <Button variant="outline-danger" size="sm" className="rounded-circle" onClick={() => abrirModalEliminar(prod)} title="Eliminar Producto">
                     <i className="bi-trash"></i>
                   </Button>
                 </Card.Footer>
@@ -454,6 +480,13 @@ const Productos = () => {
         setMostrarModal={setMostrarModalEliminar}
         productoEliminar={productoEliminar}
         eliminarProducto={eliminarProducto}
+      />
+
+      {/* Modal QR de Producto */}
+      <ModalQRProducto
+        mostrarModalQR={mostrarModalQR}
+        setMostrarModalQR={setMostrarModalQR}
+        productoQR={productoQR}
       />
 
       {/* Modal de Detalles */}

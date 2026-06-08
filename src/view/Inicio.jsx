@@ -1,192 +1,336 @@
-import React from "react";
-import { Container, Row, Col, Button, Card, Badge } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import heroImage from "../assets/hero.png";
+import React, { useEffect, useState } from "react";
+import { Container, Row, Col, Card, Spinner, Form, Button } from "react-bootstrap";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { supabase } from "../database/supabaseconfig";
+import * as XLSX from 'xlsx';
 
 const Inicio = () => {
-  const navigate = useNavigate();
+  const [cargando, setCargando] = useState(true);
+  const [fechaDesde, setFechaDesde] = useState(
+    new Date().toLocaleDateString("en-CA", { timeZone: "America/Managua" })
+  );
+  const [fechaHasta, setFechaHasta] = useState(
+    new Date().toLocaleDateString("en-CA", { timeZone: "America/Managua" })
+  );
 
-  // Variantes para animaciones fluidas con Framer Motion (Física de resortes)
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-      },
-    },
+  const [estadisticas, setEstadisticas] = useState({
+    totalVentas: 0,
+    ventasEfectivo: 0,
+    ventasTarjeta: 0,
+    productosVendidos: 0,
+    montoProductos: 0,
+    cantidadVentas: 0,
+    ventasPorHora: [],
+    ventasPorCategoria: []
+  });
+
+  useEffect(() => {
+    cargarDatos(fechaDesde, fechaHasta);
+  }, [fechaDesde, fechaHasta]);
+
+  const cargarDatos = async (desde, hasta) => {
+    try {
+      setCargando(true);
+      const inicioRango = `${desde} 00:00:00`;
+      const finRango = `${hasta} 23:59:59`;
+
+      const { data: ventas, error } = await supabase
+        .from("ventas")
+        .select("id_venta, total, fecha_venta, metodo_pago")
+        .gte("fecha_venta", inicioRango)
+        .lte("fecha_venta", finRango);
+
+      if (error) throw error;
+
+      const idsVentas = ventas?.map((v) => v.id_venta) || [];
+
+      let productosVendidos = 0;
+      let montoProductos = 0;
+      let ventasPorCategoria = [];
+
+      if (idsVentas.length > 0) {
+        const { data: detalles } = await supabase
+          .from("detalles_ventas")
+          .select(`
+            cantidad,
+            subtotal,
+            productos (
+              nombre_producto,
+              categorias (nombre_categoria)
+            )
+          `)
+          .in("id_venta", idsVentas);
+
+        detalles?.forEach((d) => {
+          productosVendidos += d.cantidad || 0;
+          montoProductos += d.subtotal || 0;
+
+          const categoria = d.productos?.categorias?.nombre_categoria || "Sin categoría";
+          const existente = ventasPorCategoria.find((c) => c.name === categoria);
+
+          if (existente) {
+            existente.value += d.subtotal || 0;
+          } else {
+            ventasPorCategoria.push({ name: categoria, value: d.subtotal || 0 });
+          }
+        });
+
+        ventasPorCategoria.sort((a, b) => b.value - a.value);
+      }
+
+      const totalVentas = ventas?.reduce((sum, v) => sum + (v.total || 0), 0) || 0;
+      const ventasEfectivo =
+        ventas
+          ?.filter((v) => v.metodo_pago === "efectivo")
+          .reduce((sum, v) => sum + (v.total || 0), 0) || 0;
+      const ventasTarjeta =
+        ventas
+          ?.filter((v) => v.metodo_pago === "tarjeta")
+          .reduce((sum, v) => sum + (v.total || 0), 0) || 0;
+
+      const horaMap = Array(24).fill(0);
+      ventas?.forEach((venta) => {
+        if (!venta.fecha_venta) return;
+        const hora = new Date(venta.fecha_venta).getHours();
+        if (hora >= 0 && hora < 24) horaMap[hora] += venta.total || 0;
+      });
+
+      const ventasPorHora = [];
+      let acumulado = 0;
+      for (let h = 8; h <= 22; h++) {
+        acumulado += horaMap[h];
+        ventasPorHora.push({
+          hora: `${h.toString().padStart(2, "0")}:00`,
+          total: Math.round(acumulado)
+        });
+      }
+
+      setEstadisticas({
+        totalVentas,
+        ventasEfectivo,
+        ventasTarjeta,
+        productosVendidos,
+        montoProductos,
+        cantidadVentas: ventas?.length || 0,
+        ventasPorHora,
+        ventasPorCategoria
+      });
+    } catch (err) {
+      console.error("Error al cargar estadísticas:", err);
+    } finally {
+      setCargando(false);
+    }
   };
 
-  const itemVariants = {
-    hidden: { y: 30, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 15,
-      },
-    },
+  const descargarExcel = async () => {
+    try {
+      setCargando(true);
+      const inicioRango = `${fechaDesde} 00:00:00`;
+      const finRango = `${fechaHasta} 23:59:59`;
+
+      // 1. Obtener Ventas
+      const { data: ventas, error: errorVentas } = await supabase
+        .from("ventas")
+        .select(`
+          id_venta,
+          fecha_venta,
+          total,
+          metodo_pago,
+          id_empleado,
+          id_cliente
+        `)
+        .gte("fecha_venta", inicioRango)
+        .lte("fecha_venta", finRango)
+        .order("fecha_venta", { ascending: false });
+
+      if (errorVentas) throw errorVentas;
+
+      // 2. Obtener Detalles
+      const idsVentas = ventas?.map((v) => v.id_venta) || [];
+      let detallesVenta = [];
+
+      if (idsVentas.length > 0) {
+        const { data: detalles, error: errorDetalles } = await supabase
+          .from("detalles_ventas")
+          .select(`
+            id_detalle,
+            id_venta,
+            cantidad,
+            precio_unitario,
+            subtotal,
+            id_producto,
+            productos (
+              nombre_producto,
+              categorias (nombre_categoria)
+            )
+          `)
+          .in("id_venta", idsVentas)
+          .order("id_venta");
+
+        if (errorDetalles) console.error("Error en detalles:", errorDetalles);
+        else detallesVenta = detalles || [];
+      }
+
+      const wb = XLSX.utils.book_new();
+
+      // Hoja Ventas
+      if (ventas && ventas.length > 0) {
+        const wsVentas = XLSX.utils.json_to_sheet(ventas);
+        XLSX.utils.book_append_sheet(wb, wsVentas, "Ventas");
+      } else {
+        XLSX.utils.book_append_sheet(
+          wb,
+          XLSX.utils.json_to_sheet([{ Mensaje: "No hay ventas en este rango" }]),
+          "Ventas"
+        );
+      }
+
+      // Hoja Detalles
+      if (detallesVenta && detallesVenta.length > 0) {
+        const wsDetalles = XLSX.utils.json_to_sheet(detallesVenta);
+        XLSX.utils.book_append_sheet(wb, wsDetalles, "Detalles_Ventas");
+      } else {
+        XLSX.utils.book_append_sheet(
+          wb,
+          XLSX.utils.json_to_sheet([{ Mensaje: "No hay detalles de ventas" }]),
+          "Detalles_Ventas"
+        );
+      }
+
+      XLSX.writeFile(wb, `Reporte_Ventas_${fechaDesde}_a_${fechaHasta}.xlsx`);
+    } catch (err) {
+      console.error("Error generando Excel:", err);
+      alert("Error al generar el Excel. Revisa la consola.");
+    } finally {
+      setCargando(false);
+    }
   };
 
-  const cardVariants = {
-    hidden: { y: 40, opacity: 0, scale: 0.95 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      scale: 1,
-      transition: {
-        type: "spring",
-        stiffness: 80,
-        damping: 12,
-      },
-    },
-    hover: {
-      y: -6,
-      x: -2,
-      boxShadow: "6px 6px 0px #352520",
-      transition: {
-        type: "spring",
-        stiffness: 400,
-        damping: 17,
-      },
-    },
-  };
+  const COLORES = ["#5e26b2", "#39ff95", "#ff6bc6", "#8b46ff", "#00d4ff", "#ffd93d"];
+
+  if (cargando) {
+    return (
+      <Container className="text-center mt-5">
+        <Spinner animation="border" variant="primary" size="lg" />
+        <p className="mt-3">Cargando estadísticas...</p>
+      </Container>
+    );
+  }
 
   return (
-    <div className="animate-fade-in pb-5">
-      {/* Hero Section - Estilo Editorial Cálido */}
-      <Container className="py-5 my-4">
-        <Row className="align-items-center g-5">
-          <Col lg={6}>
-            <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="d-flex flex-column gap-3"
-            >
-              <motion.div variants={itemVariants}>
-                <Badge bg="white" className="text-primary rounded px-3 py-2 fw-bold shadow-sm">
-                  ★ Plataforma de Gestión v2.0
-                </Badge>
-              </motion.div>
+    <div className="mt-2">
+      <div className="mb-4">
+        <h2>Dashboard</h2>
+        <h6>Estadísticas del Negocio</h6>
+      </div>
+      <Row className="mb-4">
+        <Col xs={6} md={3}>
+          <Form.Group>
+            <Form.Label>Desde</Form.Label>
+            <Form.Control
+              type="date"
+              value={fechaDesde}
+              onChange={(e) => setFechaDesde(e.target.value)}
+            />
+          </Form.Group>
+        </Col>
+        <Col xs={6} md={3}>
+          <Form.Group>
+            <Form.Label>Hasta</Form.Label>
+            <Form.Control
+              type="date"
+              value={fechaHasta}
+              onChange={(e) => setFechaHasta(e.target.value)}
+            />
+          </Form.Group>
+        </Col>
+        <Col md={3} className="d-flex align-items-end">
+          <Button variant="success" onClick={descargarExcel}>
+            <i className="bi bi-file-earmark-excel me-2"></i>
+            Descargar Excel
+          </Button>
+        </Col>
+      </Row>
 
-              <motion.div variants={itemVariants}>
-                <h1 className="display-3 fw-bold mb-0 text-uppercase" style={{ letterSpacing: "-1px", lineHeight: "1.05" }}>
-                  Tu Inventario, <br />
-                  <span className="text-primary">Simplificado.</span>
-                </h1>
-              </motion.div>
+      {/* Tarjetas (sin cambios) */}
+      <Row className="g-4 mb-5">
+        <Col md={6} lg={3}>
+          <Card className="h-100 text-white shadow" style={{ background: "linear-gradient(135deg, #28a745, #34ce57)" }}>
+            <Card.Body>
+              <h5>Ventas Totales</h5>
+              <h2>C$ {estadisticas.totalVentas.toFixed(2)}</h2>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={6} lg={3}>
+          <Card className="h-100 text-white shadow" style={{ background: "linear-gradient(135deg, #0166d3, #3399ff)" }}>
+            <Card.Body>
+              <h5>Efectivo</h5>
+              <h2>C$ {estadisticas.ventasEfectivo.toFixed(2)}</h2>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={6} lg={3}>
+          <Card className="h-100 text-white shadow" style={{ background: "linear-gradient(135deg, #5ea5f1, #94c0ec)" }}>
+            <Card.Body>
+              <h5>Tarjeta</h5>
+              <h2>C$ {estadisticas.ventasTarjeta.toFixed(2)}</h2>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={6} lg={3}>
+          <Card className="h-100 text-white shadow" style={{ background: "linear-gradient(135deg, #e27d01, #ffa500)" }}>
+            <Card.Body>
+              <h5>Productos Vendidos</h5>
+              <h2>{estadisticas.productosVendidos}</h2>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
 
-              <motion.div variants={itemVariants}>
-                <p className="lead text-muted mb-4" style={{ maxWidth: "480px" }}>
-                  Gestiona tus productos, categorías y permisos de forma profesional con nuestra plataforma moderna, rápida y segura basada en Supabase.
-                </p>
-              </motion.div>
-
-              <motion.div variants={itemVariants} className="d-flex gap-3">
-                <Button
-                  variant="primary"
-                  className="btn-rounded text-white shadow px-4 py-2"
-                  onClick={() => navigate("/productos")}
-                >
-                  Ver Inventario <i className="bi-arrow-right ms-2"></i>
-                </Button>
-                <Button
-                  variant="outline-light"
-                  className="btn-rounded px-4"
-                  onClick={() => navigate("/categorias")}
-                >
-                  Categorías
-                </Button>
-              </motion.div>
-
-              <motion.div 
-                variants={itemVariants} 
-                className="d-flex flex-wrap gap-4 mt-4 border-top pt-4 border-2 border-opacity-10" 
-                style={{ borderColor: "#352520" }}
-              >
-                <div className="d-flex align-items-center gap-2">
-                  <i className="bi bi-cpu-fill text-primary h5 mb-0"></i>
-                  <span className="small fw-semibold">Base de Datos Supabase Activa</span>
-                </div>
-                <div className="d-flex align-items-center gap-2">
-                  <i className="bi bi-shield-lock-fill text-primary h5 mb-0"></i>
-                  <span className="small fw-semibold">Control de Permisos por Roles</span>
-                </div>
-              </motion.div>
-            </motion.div>
-          </Col>
-
-          <Col lg={6} className="d-none d-lg-block">
-            <motion.div
-              initial={{ opacity: 0, x: 50, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              transition={{ type: "spring", stiffness: 60, damping: 15, delay: 0.3 }}
-              className="border border-2 border-dark rounded-4 overflow-hidden shadow-sm hover-lift"
-              style={{ boxShadow: "4px 4px 0px #352520" }}
-            >
-              <img src={heroImage} alt="Dashboard Preview" className="img-fluid w-100" style={{ objectFit: "cover" }} />
-            </motion.div>
-          </Col>
-        </Row>
-      </Container>
-
-      {/* Características / Estadísticas */}
-      <Container className="mb-5">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-        >
-          <Row className="g-4 text-center">
-            <Col md={4}>
-              <motion.div variants={cardVariants} whileHover="hover" className="h-100">
-                <Card className="border-2 rounded-3 h-100 p-4 cursor-pointer">
-                  <div className="bg-primary bg-opacity-10 icon-circle mx-auto mb-3">
-                    <i className="bi-lightning-charge-fill text-primary h3 mb-0"></i>
-                  </div>
-                  <h4 className="fw-bold text-uppercase">Velocidad Real</h4>
-                  <p className="text-muted small mb-0">
-                    Consultas optimizadas para una respuesta instantánea en tu gestión diaria.
-                  </p>
-                </Card>
-              </motion.div>
-            </Col>
-
-            <Col md={4}>
-              <motion.div variants={cardVariants} whileHover="hover" className="h-100">
-                <Card className="border-2 rounded-3 h-100 p-4 cursor-pointer">
-                  <div className="bg-success bg-opacity-10 icon-circle mx-auto mb-3">
-                    <i className="bi-shield-check text-success h3 mb-0"></i>
-                  </div>
-                  <h4 className="fw-bold text-uppercase">Seguridad Total</h4>
-                  <p className="text-muted small mb-0">
-                    Tus datos están protegidos con políticas de seguridad de grado industrial (RLS).
-                  </p>
-                </Card>
-              </motion.div>
-            </Col>
-
-            <Col md={4}>
-              <motion.div variants={cardVariants} whileHover="hover" className="h-100">
-                <Card className="border-2 rounded-3 h-100 p-4 cursor-pointer">
-                  <div className="bg-info bg-opacity-10 icon-circle mx-auto mb-3">
-                    <i className="bi-grid-fill text-info h3 mb-0"></i>
-                  </div>
-                  <h4 className="fw-bold text-uppercase">Control Total</h4>
-                  <p className="text-muted small mb-0">
-                    Organiza todo por categorías para mantener tu catálogo siempre ordenado.
-                  </p>
-                </Card>
-              </motion.div>
-            </Col>
-          </Row>
-        </motion.div>
-      </Container>
+      {/* Gráficos (sin cambios) */}
+      <Row className="g-4">
+        <Col lg={8}>
+          <Card className="shadow border-0">
+            <Card.Body>
+              <h5 className="mb-3">Ventas por Hora</h5>
+              <ResponsiveContainer width="100%" height={360}>
+                <LineChart data={estadisticas.ventasPorHora}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="hora" />
+                  <YAxis tickFormatter={(v) => `C$${v}`} />
+                  <Tooltip formatter={(v) => [`C$ ${v}`, "Monto"]} />
+                  <Line type="monotone" dataKey="total" stroke="#5e26b2" strokeWidth={4} dot={{ r: 6 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col lg={4}>
+          <Card className="shadow border-0">
+            <Card.Body>
+              <h5 className="mb-3">Ventas por Categoría</h5>
+              <ResponsiveContainer width="100%" height={360}>
+                <PieChart>
+                  <Pie
+                    data={estadisticas.ventasPorCategoria.length > 0 ? estadisticas.ventasPorCategoria : [{ name: "Sin datos", value: 1 }]}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%" cy="50%"
+                    innerRadius={60} outerRadius={110}
+                    label
+                  >
+                    {estadisticas.ventasPorCategoria.map((_, i) => (
+                      <Cell key={`cell-${i}`} fill={COLORES[i % COLORES.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(v) => `C$ ${v}`} />
+                </PieChart>
+              </ResponsiveContainer>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
 };

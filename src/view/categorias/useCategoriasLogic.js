@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../database/supabaseconfig";
+import emailjs from "@emailjs/browser";
 
 const categoriaInicial = { nombre_categoria: "", descripcion_categoria: "" };
 const ITEMS_POR_PAGINA = 6;
@@ -22,6 +23,14 @@ const useCategoriasLogic = () => {
 
   const [textoBusqueda, setTextoBusqueda] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
+
+  const [mostrarModalCorreo, setMostrarModalCorreo] = useState(false);
+  const [emailDestino, setEmailDestino] = useState("");
+  const [enviandoCorreo, setEnviandoCorreo] = useState(false);
+
+  useEffect(() => {
+    emailjs.init(import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "public_key_default");
+  }, []);
 
   const obtenerCategorias = async () => {
     try {
@@ -187,12 +196,89 @@ const useCategoriasLogic = () => {
     navigate("/productos", { state: { categoriaId: idCategoria } });
   };
 
+  const abrirModalCorreo = () => {
+    setEmailDestino("");
+    setMostrarModalCorreo(true);
+  };
+
+  const formatearCategoriasParaCorreo = () => {
+    if (categorias.length === 0) return "No hay categorías registradas.";
+    let texto = `LISTADO DE CATEGORÍAS\n\n`;
+    texto += `Fecha: ${new Date().toLocaleDateString("es-NI")}\n`;
+    texto += `Total de categorías: ${categorias.length}\n\n`;
+    categorias.forEach((cat, index) => {
+      texto += `${index + 1}. ${cat.nombre_categoria}\n`;
+      if (cat.descripcion_categoria) {
+        texto += ` Descripción: ${cat.descripcion_categoria}\n`;
+      }
+      texto += `\n`;
+    });
+    return texto;
+  };
+
+  const enviarCorreoCategorias = () => {
+    if (!emailDestino.trim()) {
+      setToast({
+        mostrar: true,
+        mensaje: "Por favor ingresa un correo destino.",
+        tipo: "advertencia",
+      });
+      return;
+    }
+    setEnviandoCorreo(true);
+    const mensaje = formatearCategoriasParaCorreo();
+    const templateParams = {
+      to_name: "Administrador",
+      user_email: emailDestino,
+      message: mensaje,
+      fecha_envio: new Date().toLocaleDateString("es-NI")
+    };
+    emailjs.send(
+      import.meta.env.VITE_EMAILJS_SERVICE_ID || "service_default",
+      import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "template_default",
+      templateParams
+    )
+    .then(() => {
+      setToast({
+        mostrar: true,
+        mensaje: "Correo enviado correctamente.",
+        tipo: "exito",
+      });
+      setMostrarModalCorreo(false);
+      setEmailDestino("");
+    })
+    .catch((error) => {
+      console.error("Error EmailJS:", error);
+      setToast({
+        mostrar: true,
+        mensaje: "Error al enviar el correo.",
+        tipo: "error",
+      });
+    })
+    .finally(() => {
+      setEnviandoCorreo(false);
+    });
+  };
+
+  const copiarCategoria = (categoria) => {
+    const texto = `Categoría: ${categoria.nombre_categoria}\nDescripción: ${categoria.descripcion_categoria || "Sin descripción"}`;
+    navigator.clipboard.writeText(texto)
+      .then(() => {
+        setToast({ mostrar: true, mensaje: "Información de categoría copiada al portapapeles.", tipo: "exito" });
+      })
+      .catch((err) => {
+        console.error("Error al copiar:", err);
+        setToast({ mostrar: true, mensaje: "Error al copiar al portapapeles.", tipo: "error" });
+      });
+  };
+
   return {
     navigate,
     cargando,
     error,
     toast,
     setToast,
+    categorias,
     categoriasFiltradas,
     categoriasPaginadas,
     totalPaginas,
@@ -217,6 +303,14 @@ const useCategoriasLogic = () => {
     prepararEliminacion,
     eliminarCategoria,
     irAProductosDeCategoria,
+    mostrarModalCorreo,
+    setMostrarModalCorreo,
+    emailDestino,
+    setEmailDestino,
+    enviandoCorreo,
+    abrirModalCorreo,
+    enviarCorreoCategorias,
+    copiarCategoria
   };
 };
 

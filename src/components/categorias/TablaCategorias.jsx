@@ -5,7 +5,8 @@ const TablaCategorias = ({
   categorias,
   abrirModalEdicion,
   abrirModalEliminacion,
-  generarPDFCategoria
+  generarPDFCategoria,
+  copiarCategoria
 }) => {
   return (
     <Table striped hover responsive className="align-middle shadow-sm rounded-4 overflow-hidden">
@@ -24,30 +25,44 @@ const TablaCategorias = ({
             <td>{categoria.nombre_categoria}</td>
             <td>{categoria.descripcion_categoria || "Sin descripción"}</td>
             <td className="text-center">
-              <Button
-                variant="outline-primary"
-                size="sm"
-                className="m-1"
-                onClick={() => abrirModalEdicion(categoria)}
-              >
-                <i className="bi bi-pencil"></i>
-              </Button>
-              <Button
-                variant="outline-danger"
-                size="sm"
-                className="m-1"
-                onClick={() => abrirModalEliminacion(categoria)}
-              >
-                <i className="bi bi-trash"></i>
-              </Button>
-              <Button
-                variant="outline-primary"
-                size="sm"
-                className="m-1"
-                onClick={() => generarPDFCategoria(categoria)}
-              >
-                <i className="bi bi-file-earmark-pdf"></i>
-              </Button>
+              <div className="d-flex justify-content-center align-items-center gap-1">
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  className="rounded-circle"
+                  onClick={() => abrirModalEdicion(categoria)}
+                  title="Editar Categoría"
+                >
+                  <i className="bi bi-pencil"></i>
+                </Button>
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  className="rounded-circle"
+                  onClick={() => abrirModalEliminacion(categoria)}
+                  title="Eliminar Categoría"
+                >
+                  <i className="bi bi-trash"></i>
+                </Button>
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  className="rounded-circle"
+                  onClick={() => generarPDFCategoria(categoria)}
+                  title="Generar PDF"
+                >
+                  <i className="bi bi-file-earmark-pdf"></i>
+                </Button>
+                <Button
+                  variant="outline-secondary"
+                  size="sm"
+                  className="rounded-circle"
+                  onClick={() => copiarCategoria(categoria)}
+                  title="Copiar al portapapeles"
+                >
+                  <i className="bi bi-clipboard"></i>
+                </Button>
+              </div>
             </td>
           </tr>
         ))}

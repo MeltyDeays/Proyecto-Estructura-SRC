@@ -3,9 +3,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Container, Nav, Navbar, Offcanvas, Button } from "react-bootstrap";
 import logo from "../../assets/react.svg";
 import { useAuth } from "../../context/AuthContext";
+import ChatIA from "./ChatIA";
 
 const Encabezado = () => {
   const [mostrarMenu, setMostrarMenu] = useState(false);
+  const [mostrarChat, setMostrarChat] = useState(false);
   const navigate = useNavigate();
   const location = useLocation(); // Para detectar la ruta actual
   const { tienePermiso, logout, usuario } = useAuth();
@@ -105,12 +107,39 @@ const Encabezado = () => {
             <i className="bi-shield-lock-fill me-2"></i> Permisos
           </Nav.Link>
         )}
+        {tienePermiso('ver_ventas') && (
+          <Nav.Link 
+            onClick={() => manejarNavegacion("/ventas")} 
+            className={`nav-link-custom ${location.pathname === '/ventas' ? 'nav-link-active' : ''}`}
+          >
+            <i className="bi-receipt-cutoff me-2"></i> Ventas
+          </Nav.Link>
+        )}
+        {tienePermiso('ver_clientes') && (
+          <Nav.Link 
+            onClick={() => manejarNavegacion("/clientes")} 
+            className={`nav-link-custom ${location.pathname === '/clientes' ? 'nav-link-active' : ''}`}
+          >
+            <i className="bi-people-fill me-2"></i> Clientes
+          </Nav.Link>
+        )}
         {tienePermiso('ver_catalogo') && (
           <Nav.Link 
             onClick={() => manejarNavegacion("/catalogo")} 
             className={`nav-link-custom ${location.pathname === '/catalogo' ? 'nav-link-active' : ''}`}
           >
             <i className="bi-layout-text-window-reverse me-2"></i> Catálogo
+          </Nav.Link>
+        )}
+        {estaLogueado && (
+          <Nav.Link 
+            onClick={() => {
+              setMostrarChat(true);
+              setMostrarMenu(false);
+            }} 
+            className="nav-link-custom"
+          >
+            <i className="bi bi-cpu me-2"></i> Chat IA
           </Nav.Link>
         )}
         <Button 
@@ -126,55 +155,58 @@ const Encabezado = () => {
   }
 
   return (
-    <Navbar 
-      expand="lg" 
-      variant="dark" 
-      className="color-navbar shadow-sm sticky-top py-3"
-      style={{ backdropFilter: 'blur(10px)', backgroundColor: 'rgba(16, 104, 219, 0.95) !important' }}
-    >
-      <Container>
-        <Navbar.Brand 
-          onClick={() => manejarNavegacion("/")} 
-          className="d-flex align-items-center cursor-pointer"
-          style={{ cursor: 'pointer' }}
-        >
-          <div className="bg-white p-2 rounded-3 me-2 shadow-sm d-flex align-items-center justify-content-center">
-            <img 
-              src={logo} 
-              alt="Logo" 
-              width="24" 
-              height="24" 
-              className="d-inline-block align-top"
-            />
-          </div>
-          <span className="fw-bold tracking-wider text-white h4 mb-0">Discosa</span>
-        </Navbar.Brand>
+    <>
+      <Navbar 
+        expand="lg" 
+        variant="dark" 
+        className="color-navbar shadow-sm sticky-top py-3"
+        style={{ backdropFilter: 'blur(10px)', backgroundColor: 'rgba(16, 104, 219, 0.95) !important' }}
+      >
+        <Container>
+          <Navbar.Brand 
+            onClick={() => manejarNavegacion("/")} 
+            className="d-flex align-items-center cursor-pointer"
+            style={{ cursor: 'pointer' }}
+          >
+            <div className="bg-white p-2 rounded-3 me-2 shadow-sm d-flex align-items-center justify-content-center">
+              <img 
+                src={logo} 
+                alt="Logo" 
+                width="24" 
+                height="24" 
+                className="d-inline-block align-top"
+              />
+            </div>
+            <span className="fw-bold tracking-wider text-white h4 mb-0">Discosa</span>
+          </Navbar.Brand>
 
-        <Navbar.Toggle 
-          aria-controls="offcanvasNavbar" 
-          onClick={manejarToggle}
-          className="border-0 shadow-none"
-        />
+          <Navbar.Toggle 
+            aria-controls="offcanvasNavbar" 
+            onClick={manejarToggle}
+            className="border-0 shadow-none"
+          />
 
-        <Navbar.Offcanvas
-          show={mostrarMenu}
-          onHide={() => setMostrarMenu(false)}
-          id="offcanvasNavbar"
-          aria-labelledby="offcanvasNavbarLabel"
-          placement="end"
-          className="bg-primary text-white"
-        >
-          <Offcanvas.Header closeButton closeVariant="white" className="border-bottom border-white border-opacity-10">
-            <Offcanvas.Title id="offcanvasNavbarLabel" className="fw-bold">
-              Menú Principal
-            </Offcanvas.Title>
-          </Offcanvas.Header>
-          <Offcanvas.Body>
-            {contenidoMenu}
-          </Offcanvas.Body>
-        </Navbar.Offcanvas>
-      </Container>
-    </Navbar>
+          <Navbar.Offcanvas
+            show={mostrarMenu}
+            onHide={() => setMostrarMenu(false)}
+            id="offcanvasNavbar"
+            aria-labelledby="offcanvasNavbarLabel"
+            placement="end"
+            className="bg-primary text-white"
+          >
+            <Offcanvas.Header closeButton closeVariant="white" className="border-bottom border-white border-opacity-10">
+              <Offcanvas.Title id="offcanvasNavbarLabel" className="fw-bold">
+                Menú Principal
+              </Offcanvas.Title>
+            </Offcanvas.Header>
+            <Offcanvas.Body>
+              {contenidoMenu}
+            </Offcanvas.Body>
+          </Navbar.Offcanvas>
+        </Container>
+      </Navbar>
+      <ChatIA mostrar={mostrarChat} setMostrar={setMostrarChat} />
+    </>
   );
 };
 

@@ -6,12 +6,14 @@ import ModalEdicionCategoria from "../../components/categorias/modales/ModalEdic
 import ModalEliminacionCategoria from "../../components/categorias/modales/ModalEliminacionCategoria";
 import NotificacionOperacion from "../../components/NotificacionOperacion";
 import TablaCategorias from "../../components/categorias/TablaCategorias";
+import ModalEnvioCorreoCategorias from "../../components/categorias/modales/ModalEnvioCorreoCategorias";
 
 const CategoriasView = ({
   cargando,
   error,
   toast,
   setToast,
+  categorias,
   categoriasFiltradas,
   categoriasPaginadas,
   totalPaginas,
@@ -38,13 +40,21 @@ const CategoriasView = ({
   irAProductosDeCategoria,
   generarPDFCategoria,
   generarPDFTodasCategorias,
+  mostrarModalCorreo,
+  setMostrarModalCorreo,
+  emailDestino,
+  setEmailDestino,
+  enviandoCorreo,
+  abrirModalCorreo,
+  enviarCorreoCategorias,
+  copiarCategoria,
 }) => {
   return (
     <div className="animate-fade-in">
       <div className="py-5 mb-5 position-relative">
         <Container className="py-4">
           <Row className="align-items-center">
-            <Col md={8} className="animate-fade-in-up">
+            <Col md={5} className="animate-fade-in-up">
               <Badge bg="white" className="text-primary rounded-pill px-3 py-2 mb-3 fw-bold shadow-sm">
                 Organizacion de Inventario
               </Badge>
@@ -55,18 +65,25 @@ const CategoriasView = ({
                 Clasifica tus productos para un acceso rapido y un control total de tu stock.
               </p>
             </Col>
-             <Col md={4} className="text-end d-none d-md-block animate-fade-in-up delay-1">
+            <Col md={7} className="d-none d-md-flex justify-content-end align-items-center gap-2 animate-fade-in-up delay-1">
               <Button
                 variant="outline-danger"
                 onClick={() => generarPDFTodasCategorias(categoriasFiltradas)}
-                className="btn-rounded shadow px-4 py-2 h5 mb-0 me-2"
+                className="btn-rounded shadow px-3 py-2 h5 mb-0"
               >
                 <i className="bi-file-earmark-pdf me-2"></i> Exportar PDF
               </Button>
               <Button
+                variant="outline-primary"
+                onClick={abrirModalCorreo}
+                className="btn-rounded shadow px-3 py-2 h5 mb-0"
+              >
+                <i className="bi bi-envelope me-2"></i> Enviar por Correo
+              </Button>
+              <Button
                 variant="info"
                 onClick={() => setMostrarModalRegistro(true)}
-                className="btn-rounded text-white shadow-lg px-4 py-2 h5 mb-0"
+                className="btn-rounded text-white shadow-lg px-3 py-2 h5 mb-0"
               >
                 <i className="bi-plus-lg me-2"></i> Nueva Categoria
               </Button>
@@ -76,18 +93,25 @@ const CategoriasView = ({
       </div>
 
       <Container className="mb-5">
-        <div className="d-md-none text-center mb-4 d-flex justify-content-center gap-2">
+        <div className="d-md-none text-center mb-4 d-flex justify-content-center flex-wrap gap-2">
           <Button
             variant="outline-danger"
             onClick={() => generarPDFTodasCategorias(categoriasFiltradas)}
-            className="btn-rounded shadow px-4"
+            className="btn-rounded shadow px-3"
           >
             <i className="bi-file-earmark-pdf me-2"></i> Exportar PDF
           </Button>
           <Button
+            variant="outline-primary"
+            onClick={abrirModalCorreo}
+            className="btn-rounded shadow px-3"
+          >
+            <i className="bi bi-envelope me-2"></i> Correo
+          </Button>
+          <Button
             variant="primary"
             onClick={() => setMostrarModalRegistro(true)}
-            className="btn-rounded shadow px-4"
+            className="btn-rounded shadow px-3"
           >
             <i className="bi-plus-lg me-2"></i> Nueva Categoria
           </Button>
@@ -134,6 +158,7 @@ const CategoriasView = ({
             abrirModalEdicion={prepararEdicion}
             abrirModalEliminacion={prepararEliminacion}
             generarPDFCategoria={generarPDFCategoria}
+            copiarCategoria={copiarCategoria}
           />
         )}
 
@@ -164,6 +189,16 @@ const CategoriasView = ({
           setMostrarModal={setMostrarModalEliminacion}
           categoriaAEliminar={categoriaAEliminar}
           eliminarCategoria={eliminarCategoria}
+        />
+
+        <ModalEnvioCorreoCategorias
+          mostrarModalCorreo={mostrarModalCorreo}
+          setMostrarModalCorreo={setMostrarModalCorreo}
+          emailDestino={emailDestino}
+          setEmailDestino={setEmailDestino}
+          enviandoCorreo={enviandoCorreo}
+          enviarCorreoCategorias={enviarCorreoCategorias}
+          totalCategorias={categorias.length}
         />
 
         <NotificacionOperacion
