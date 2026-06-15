@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Modal, Button } from "react-bootstrap";
+import { Modal, Button, Image } from "react-bootstrap";
 import QRCode from "react-qr-code";
 
 const ModalQRProducto = ({ mostrarModalQR, setMostrarModalQR, productoQR }) => {
@@ -7,7 +7,7 @@ const ModalQRProducto = ({ mostrarModalQR, setMostrarModalQR, productoQR }) => {
 
   if (!productoQR) return null;
 
-  const qrValue = JSON.stringify({
+  const qrValue = productoQR.url_imagen || JSON.stringify({
     id: productoQR.id_producto,
     nombre: productoQR.nombre_producto,
     precio: productoQR.precio_venta,
@@ -65,6 +65,22 @@ const ModalQRProducto = ({ mostrarModalQR, setMostrarModalQR, productoQR }) => {
         </Modal.Title>
       </Modal.Header>
       <Modal.Body className="text-center p-4" style={{ backgroundColor: "var(--bg-main)" }}>
+        {productoQR.url_imagen && (
+          <div className="mb-3">
+            <Image
+              src={productoQR.url_imagen}
+              alt={productoQR.nombre_producto}
+              fluid
+              rounded
+              style={{
+                maxHeight: "150px",
+                objectFit: "cover",
+                border: "2px solid var(--border-main)",
+                boxShadow: "4px 4px 0px var(--border-main)",
+              }}
+            />
+          </div>
+        )}
         <h5 className="mb-3 fw-bold">{productoQR.nombre_producto}</h5>
         <div 
           ref={qrWrapperRef}
@@ -74,7 +90,7 @@ const ModalQRProducto = ({ mostrarModalQR, setMostrarModalQR, productoQR }) => {
           <QRCode value={qrValue} size={200} />
         </div>
         <div className="mt-3 text-muted small">
-          Escanea este código QR para obtener los detalles del producto en tu dispositivo.
+          Escanea este código QR para ver la imagen y los detalles del producto en tu dispositivo.
         </div>
       </Modal.Body>
       <Modal.Footer>

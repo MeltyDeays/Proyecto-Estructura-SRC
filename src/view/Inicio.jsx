@@ -361,7 +361,7 @@ const Inicio = () => {
     }
   };
 
-  const COLORES = ["#5e26b2", "#39ff95", "#ff6bc6", "#8b46ff", "#00d4ff", "#ffd93d"];
+  const COLORES = ["#F26430", "#CA8A04", "#8A9A86", "#4F709C", "#E28F83", "#705E59"];
 
   if (cargando) {
     return (
@@ -372,99 +372,147 @@ const Inicio = () => {
     );
   }
 
+  const datosPie = estadisticas.ventasPorCategoria.length > 0 
+    ? estadisticas.ventasPorCategoria 
+    : [{ name: "Sin ventas", value: 1 }];
+
   return (
-    <div className="mt-2">
-      <div className="mb-4">
-        <h2>Dashboard</h2>
-        <h6>Estadísticas del Negocio</h6>
+    <Container className="mt-3">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 className="mb-1 fw-bold" style={{ letterSpacing: "-1.5px", fontSize: "2.25rem" }}>Dashboard</h2>
+          <p className="text-muted mb-0"><i className="bi bi-speedometer2 me-1"></i> Resumen de rendimiento y métricas del negocio</p>
+        </div>
       </div>
-      <Row className="mb-4">
-        <Col xs={6} md={3}>
-          <Form.Group>
-            <Form.Label>Desde</Form.Label>
-            <Form.Control
-              type="date"
-              value={fechaDesde}
-              onChange={(e) => setFechaDesde(e.target.value)}
-            />
-          </Form.Group>
+
+      <Card className="mb-4 shadow-sm border-2">
+        <Card.Body className="p-3">
+          <Row className="align-items-center g-3">
+            <Col xs={12} md={3}>
+              <Form.Group className="mb-0">
+                <Form.Label className="fw-semibold mb-1 small"><i className="bi bi-calendar-event me-1"></i>Desde</Form.Label>
+                <Form.Control
+                  type="date"
+                  value={fechaDesde}
+                  onChange={(e) => setFechaDesde(e.target.value)}
+                  className="form-control-sm"
+                />
+              </Form.Group>
+            </Col>
+            <Col xs={12} md={3}>
+              <Form.Group className="mb-0">
+                <Form.Label className="fw-semibold mb-1 small"><i className="bi bi-calendar-event-fill me-1"></i>Hasta</Form.Label>
+                <Form.Control
+                  type="date"
+                  value={fechaHasta}
+                  onChange={(e) => setFechaHasta(e.target.value)}
+                  className="form-control-sm"
+                />
+              </Form.Group>
+            </Col>
+            <Col xs={12} md={6} className="d-flex align-items-end justify-content-md-end gap-2">
+              <Button variant="danger" onClick={generarPdfGeneral} className="btn-rounded py-2 px-3">
+                <i className="bi bi-file-earmark-pdf-fill me-2"></i>Reporte PDF
+              </Button>
+              <Button variant="success" onClick={descargarExcel} className="btn-rounded py-2 px-3">
+                <i className="bi bi-file-earmark-excel-fill me-2"></i>Descargar Excel
+              </Button>
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
+
+      {/* Tarjetas de Estadísticas */}
+      <Row className="g-4 mb-4">
+        <Col xs={12} sm={6} lg={3}>
+          <Card className="h-100 hover-lift">
+            <Card.Body className="d-flex align-items-center justify-content-between p-4">
+              <div>
+                <span className="text-muted text-uppercase fw-semibold small" style={{ letterSpacing: "0.5px" }}>Ventas Totales</span>
+                <h2 className="mb-0 mt-2 fw-bold text-truncate" style={{ fontSize: '1.8rem', letterSpacing: '-0.5px' }}>
+                  C$ {estadisticas.totalVentas.toFixed(2)}
+                </h2>
+              </div>
+              <div className="icon-circle ms-2" style={{ minWidth: '55px', height: '55px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--border-main)', background: '#FDF2EC' }}>
+                <i className="bi bi-cash-coin fs-3" style={{ color: 'var(--primary)' }}></i>
+              </div>
+            </Card.Body>
+          </Card>
         </Col>
-        <Col xs={6} md={3}>
-          <Form.Group>
-            <Form.Label>Hasta</Form.Label>
-            <Form.Control
-              type="date"
-              value={fechaHasta}
-              onChange={(e) => setFechaHasta(e.target.value)}
-            />
-          </Form.Group>
+        <Col xs={12} sm={6} lg={3}>
+          <Card className="h-100 hover-lift">
+            <Card.Body className="d-flex align-items-center justify-content-between p-4">
+              <div>
+                <span className="text-muted text-uppercase fw-semibold small" style={{ letterSpacing: "0.5px" }}>Efectivo</span>
+                <h2 className="mb-0 mt-2 fw-bold text-truncate" style={{ fontSize: '1.8rem', letterSpacing: '-0.5px' }}>
+                  C$ {estadisticas.ventasEfectivo.toFixed(2)}
+                </h2>
+              </div>
+              <div className="icon-circle ms-2" style={{ minWidth: '55px', height: '55px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--border-main)', background: '#FEF9EC' }}>
+                <i className="bi bi-wallet2 fs-3" style={{ color: 'var(--secondary)' }}></i>
+              </div>
+            </Card.Body>
+          </Card>
         </Col>
-        <Col md={6} className="d-flex align-items-end justify-content-end gap-2">
-          <Button variant="danger" onClick={generarPdfGeneral}>
-            <i className="bi bi-file-earmark-pdf me-2"></i>
-            Reporte PDF
-          </Button>
-          <Button variant="success" onClick={descargarExcel}>
-            <i className="bi bi-file-earmark-excel me-2"></i>
-            Descargar Excel
-          </Button>
+        <Col xs={12} sm={6} lg={3}>
+          <Card className="h-100 hover-lift">
+            <Card.Body className="d-flex align-items-center justify-content-between p-4">
+              <div>
+                <span className="text-muted text-uppercase fw-semibold small" style={{ letterSpacing: "0.5px" }}>Tarjeta</span>
+                <h2 className="mb-0 mt-2 fw-bold text-truncate" style={{ fontSize: '1.8rem', letterSpacing: '-0.5px' }}>
+                  C$ {estadisticas.ventasTarjeta.toFixed(2)}
+                </h2>
+              </div>
+              <div className="icon-circle ms-2" style={{ minWidth: '55px', height: '55px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--border-main)', background: '#ECF5FD' }}>
+                <i className="bi bi-credit-card fs-3" style={{ color: '#0166d3' }}></i>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col xs={12} sm={6} lg={3}>
+          <Card className="h-100 hover-lift">
+            <Card.Body className="d-flex align-items-center justify-content-between p-4">
+              <div>
+                <span className="text-muted text-uppercase fw-semibold small" style={{ letterSpacing: "0.5px" }}>Productos Vendidos</span>
+                <h2 className="mb-0 mt-2 fw-bold text-truncate" style={{ fontSize: '1.8rem', letterSpacing: '-0.5px' }}>
+                  {estadisticas.productosVendidos}
+                </h2>
+              </div>
+              <div className="icon-circle ms-2" style={{ minWidth: '55px', height: '55px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--border-main)', background: '#F8F6F0' }}>
+                <i className="bi bi-box-seam fs-3" style={{ color: 'var(--text-main)' }}></i>
+              </div>
+            </Card.Body>
+          </Card>
         </Col>
       </Row>
 
-      {/* Tarjetas (sin cambios) */}
-      <Row className="g-4 mb-5">
-        <Col md={6} lg={3}>
-          <Card className="h-100 text-white shadow" style={{ background: "linear-gradient(135deg, #28a745, #34ce57)" }}>
-            <Card.Body>
-              <h5>Ventas Totales</h5>
-              <h2>C$ {estadisticas.totalVentas.toFixed(2)}</h2>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={6} lg={3}>
-          <Card className="h-100 text-white shadow" style={{ background: "linear-gradient(135deg, #0166d3, #3399ff)" }}>
-            <Card.Body>
-              <h5>Efectivo</h5>
-              <h2>C$ {estadisticas.ventasEfectivo.toFixed(2)}</h2>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={6} lg={3}>
-          <Card className="h-100 text-white shadow" style={{ background: "linear-gradient(135deg, #5ea5f1, #94c0ec)" }}>
-            <Card.Body>
-              <h5>Tarjeta</h5>
-              <h2>C$ {estadisticas.ventasTarjeta.toFixed(2)}</h2>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={6} lg={3}>
-          <Card className="h-100 text-white shadow" style={{ background: "linear-gradient(135deg, #e27d01, #ffa500)" }}>
-            <Card.Body>
-              <h5>Productos Vendidos</h5>
-              <h2>{estadisticas.productosVendidos}</h2>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Gráficos (sin cambios) */}
+      {/* Gráficos */}
       <Row className="g-4">
         <Col lg={8}>
-          <Card className="shadow border-0">
-            <Card.Body ref={graficoHoraRef}>
-              <h5 className="mb-3">Ventas por Hora</h5>
-              <ResponsiveContainer width="100%" height={360}>
+          <Card className="shadow-sm border-2 h-100">
+            <Card.Body ref={graficoHoraRef} className="p-4">
+              <h5 className="mb-4 fw-bold"><i className="bi bi-graph-up me-2 text-primary"></i>Ventas por Hora</h5>
+              <ResponsiveContainer width="100%" height={320}>
                 <LineChart data={estadisticas.ventasPorHora}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="hora" />
-                  <YAxis tickFormatter={(v) => `C$${v}`} />
-                  <Tooltip formatter={(v) => [`C$ ${v}`, "Monto"]} />
-                  <Line type="monotone" dataKey="total" stroke="#5e26b2" strokeWidth={4} dot={{ r: 6 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2dcd5" />
+                  <XAxis dataKey="hora" stroke="var(--text-muted)" style={{ fontFamily: 'Plus Jakarta Sans', fontSize: '0.85rem' }} />
+                  <YAxis tickFormatter={(v) => `C$${v}`} stroke="var(--text-muted)" style={{ fontFamily: 'Plus Jakarta Sans', fontSize: '0.85rem' }} />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#ffffff', 
+                      border: '2px solid var(--border-main)', 
+                      borderRadius: '8px', 
+                      fontFamily: 'Plus Jakarta Sans', 
+                      color: 'var(--text-main)' 
+                    }} 
+                    formatter={(v) => [`C$ ${v}`, "Monto"]} 
+                  />
+                  <Line type="monotone" dataKey="total" stroke="var(--primary)" strokeWidth={4} dot={{ r: 6, fill: 'var(--primary)', stroke: '#ffffff', strokeWidth: 2 }} activeDot={{ r: 8 }} />
                 </LineChart>
               </ResponsiveContainer>
-              <div className="p-3 text-center">
-                <Button variant="outline-danger" onClick={generarPdfVentasHora}>
-                  <i className="bi bi-file-earmark-pdf me-2"></i>
+              <div className="mt-4 text-center">
+                <Button variant="outline-danger" onClick={generarPdfVentasHora} className="btn-rounded py-2 px-3">
+                  <i className="bi bi-file-earmark-pdf-fill me-2"></i>
                   Descargar PDF
                 </Button>
               </div>
@@ -472,29 +520,33 @@ const Inicio = () => {
           </Card>
         </Col>
         <Col lg={4}>
-          <Card className="shadow border-0">
-            <Card.Body ref={graficoCategoriaRef}>
-              <h5 className="mb-3">Ventas por Categoría</h5>
-              <ResponsiveContainer width="100%" height={360}>
+          <Card className="shadow-sm border-2 h-100">
+            <Card.Body ref={graficoCategoriaRef} className="p-4">
+              <h5 className="mb-4 fw-bold"><i className="bi bi-pie-chart me-2 text-secondary"></i>Ventas por Categoría</h5>
+              <ResponsiveContainer width="100%" height={320}>
                 <PieChart>
                   <Pie
-                    data={estadisticas.ventasPorCategoria.length > 0 ? estadisticas.ventasPorCategoria : [{ name: "Sin datos", value: 1 }]}
+                    data={datosPie}
                     dataKey="value"
                     nameKey="name"
                     cx="50%" cy="50%"
-                    innerRadius={60} outerRadius={110}
-                    label
+                    innerRadius={60} outerRadius={100}
+                    label={({ name, percent }) => percent > 0.05 ? `${name} ${(percent * 100).toFixed(0)}%` : ''}
+                    labelLine={false}
                   >
-                    {estadisticas.ventasPorCategoria.map((_, i) => (
-                      <Cell key={`cell-${i}`} fill={COLORES[i % COLORES.length]} />
+                    {datosPie.map((entry, i) => (
+                      <Cell 
+                        key={`cell-${i}`} 
+                        fill={estadisticas.ventasPorCategoria.length > 0 ? COLORES[i % COLORES.length] : "#e2dcd5"} 
+                      />
                     ))}
                   </Pie>
                   <Tooltip formatter={(v) => `C$ ${v}`} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="p-3 text-center">
-                <Button variant="outline-danger" onClick={generarPdfVentasCategoria}>
-                  <i className="bi bi-file-earmark-pdf me-2"></i>
+                <Button variant="outline-danger" onClick={generarPdfVentasCategoria} className="btn-rounded py-2 px-3">
+                  <i className="bi bi-file-earmark-pdf-fill me-2"></i>
                   Descargar PDF
                 </Button>
               </div>
@@ -502,7 +554,7 @@ const Inicio = () => {
           </Card>
         </Col>
       </Row>
-    </div>
+    </Container>
   );
 };
 
